@@ -65,8 +65,10 @@
             overflow-y: auto;
             overflow-x: hidden;
             padding: 20px;
+            padding-bottom: 80px; /* Extra space for better scrolling on mobile */
             background: #f8f9fa;
-            min-height: 0; /* Important for flexbox scrolling */
+            min-height: 0;
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
         }
 
         .chat-messages::-webkit-scrollbar {
@@ -384,7 +386,7 @@
         const sendBtn = document.getElementById('sendBtn');
 
         // REPLACE WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxEZ_Vsj7x3amgLABULOJMfeQtM_3WXDZ-jLJ_y75y53j9ufe98Hoy1CvkVzd0AJd0O/exec';
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzadqDnlzmxURLnWzaHcS6ctnXTpSPX4NPgKpWsirp5Q6T1SMD3HGJ8C1dMrwPFQ8c/exec';
 
         let conversationHistory = [];
         let hasStarted = false;
@@ -419,39 +421,53 @@
             const lowerMsg = botMessage.toLowerCase();
             let options = null;
             
+            console.log('🔍 Checking for chips in message:', botMessage.substring(0, 100));
+            
             // Remove any existing chips
             const existingChips = document.getElementById('option-chips-container');
-            if (existingChips) existingChips.remove();
+            if (existingChips) {
+                console.log('🗑️ Removing existing chips');
+                existingChips.remove();
+            }
             
             // CORRECT CHIP DETECTION FOR EACH QUESTION
             
             // Question 4: Educational Qualification chips
             if ((lowerMsg.includes('educational qualification') || 
-                 lowerMsg.includes('highest qualification')) &&
-                !lowerMsg.includes('describes you')) {
+                 lowerMsg.includes('highest qualification') ||
+                 lowerMsg.includes('highest educational')) &&
+                !lowerMsg.includes('describes you') &&
+                !lowerMsg.includes('right now')) {
                 options = ['10th', '12th / Diploma', "Bachelor's", "Master's"];
                 console.log('✅ Detected EDUCATIONAL QUALIFICATION question - showing chips');
             }
             // Question 5: Current Status chips
-            else if (lowerMsg.includes('describes you') && lowerMsg.includes('right now')) {
+            else if ((lowerMsg.includes('describes you') && lowerMsg.includes('right now')) ||
+                     (lowerMsg.includes('current status') && lowerMsg.includes('right now'))) {
                 options = ['Student', 'Fresher', 'Working Professional', 'Job Switching'];
                 console.log('✅ Detected CURRENT STATUS question - showing chips');
             }
             // Question 6: Interest chips
             else if (lowerMsg.includes('interested in learning') || 
-                     (lowerMsg.includes('most interested') && lowerMsg.includes('learning'))) {
+                     (lowerMsg.includes('most interested') && lowerMsg.includes('learning')) ||
+                     lowerMsg.includes('what are you most interested')) {
                 options = ['Coding', 'Digital Marketing', 'Design', 'Trading / Finance', 'Data & Analytics', 'Government Exams'];
                 console.log('✅ Detected INTERESTS question - showing chips');
             }
             
             if (options) {
+                console.log('📋 Showing chips:', options);
+                // Use longer delay on mobile to ensure DOM is ready
+                const isMobile = window.innerWidth <= 768;
+                const delay = isMobile ? 200 : 50;
+                
                 setTimeout(() => {
                     showOptionChips(options);
                     userInput.disabled = true;
                     sendBtn.disabled = true;
-                }, 50);
+                }, delay);
             } else {
-                console.log('ℹ️ No chips detected for message:', botMessage.substring(0, 100));
+                console.log('ℹ️ No chips detected for message');
             }
         }
 
@@ -661,6 +677,36 @@
         userInput.focus();
 
         console.log('🚀 Chat initialized with session ID:', sessionId);
+
+        // Handle mobile keyboard visibility - scroll to keep messages visible
+        let previousHeight = window.innerHeight;
+        
+        window.visualViewport?.addEventListener('resize', () => {
+            const currentHeight = window.visualViewport.height;
+            
+            // Keyboard opened (viewport got smaller)
+            if (currentHeight < previousHeight) {
+                setTimeout(() => {
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }, 100);
+            }
+            
+            previousHeight = currentHeight;
+        });
+
+        // Fallback for browsers without visualViewport
+        window.addEventListener('resize', () => {
+            setTimeout(() => {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 100);
+        });
+
+        // Extra: Ensure input stays visible on mobile
+        userInput.addEventListener('focus', () => {
+            setTimeout(() => {
+                userInput.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 300);
+        });
     </script>
 </body>
 </html>
