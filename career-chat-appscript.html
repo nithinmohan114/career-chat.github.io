@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entri Course Chat</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f8f9fa;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 100%;
+            height: 600px;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid #e8e8e8;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            color: white;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .chat-header h1 {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .chat-header p {
+            font-size: 14px;
+            opacity: 0.95;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+
+        .chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: #3B82F6;
+            border-radius: 3px;
+        }
+
+        .message {
+            margin-bottom: 16px;
+            display: flex;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.bot {
+            justify-content: flex-start;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message-content {
+            max-width: 75%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            word-wrap: break-word;
+            line-height: 1.6;
+            font-size: 15px;
+        }
+
+        .message.bot .message-content {
+            background: #ffffff;
+            color: #333;
+            border: 1px solid #e8e8e8;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .chat-input-area {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e8e8e8;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #userInput {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #e8e8e8;
+            border-radius: 24px;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+
+        #userInput:focus {
+            border-color: #3B82F6;
+        }
+
+        #sendBtn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            color: white;
+            border: none;
+            border-radius: 24px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        #sendBtn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        #sendBtn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 12px 16px;
+            background: white;
+            border: 1px solid #e8e8e8;
+            border-radius: 12px;
+            border-bottom-left-radius: 4px;
+            width: fit-content;
+        }
+
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: #3B82F6;
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: scale(0.8);
+                opacity: 0.5;
+            }
+            30% {
+                transform: scale(1.2);
+                opacity: 1;
+            }
+        }
+
+        .course-recommendation {
+            background: linear-gradient(135deg, rgba(30, 64, 175, 0.08) 0%, rgba(59, 130, 246, 0.08) 100%);
+            padding: 16px;
+            border-radius: 12px;
+            margin-top: 10px;
+            border-left: 3px solid #3B82F6;
+        }
+
+        .course-recommendation h3 {
+            color: #1E40AF;
+            margin-bottom: 8px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .course-recommendation p {
+            color: #555;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .welcome-message {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+
+        .welcome-message h2 {
+            font-size: 20px;
+            margin-bottom: 12px;
+            color: #1E40AF;
+            font-weight: 600;
+        }
+
+        .welcome-message p {
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .option-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 12px;
+            padding: 0 4px;
+        }
+
+        .option-chip {
+            background: #0066CC;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 24px;
+            border: none;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .option-chip:hover {
+            background: #0052A3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
+        }
+
+        .option-chip:active {
+            transform: translateY(0);
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-size: 14px;
+            border-left: 3px solid #c33;
+        }
+
+        @media (max-width: 768px) {
+            .chat-container {
+                height: 500px;
+                border-radius: 12px;
+            }
+
+            .chat-header {
+                padding: 20px;
+            }
+
+            .chat-header h1 {
+                font-size: 18px;
+            }
+
+            .message-content {
+                max-width: 85%;
+                font-size: 14px;
+            }
+
+            .option-chip {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1>🎓 Find Your Perfect Course</h1>
+            <p>Let's help you discover the right path!</p>
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <div class="welcome-message">
+                <h2>Hey there! 👋</h2>
+                <p>I'm here to help you find the perfect course for your goals. Let's have a quick chat!</p>
+                <p style="margin-top: 12px; font-size: 14px;">Just say hi to get started 😊</p>
+            </div>
+        </div>
+        
+        <div class="chat-input-area">
+            <div class="input-wrapper">
+                <input type="text" id="userInput" placeholder="Type your message..." autocomplete="off">
+                <button id="sendBtn">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const chatMessages = document.getElementById('chatMessages');
+        const userInput = document.getElementById('userInput');
+        const sendBtn = document.getElementById('sendBtn');
+
+        // REPLACE WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby2_S6QRdcQbZavlz8JE1klZ7qZ8COIznlQZpjcb6OD8R_qcI3klenFLgWyH2WRDakK/exec';
+
+        let conversationHistory = [];
+        let hasStarted = false;
+        let sessionId = Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+        let lastBotMessage = '';
+
+        function addMessage(text, isBot = true) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isBot ? 'bot' : 'user'}`;
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            
+            if (isBot) {
+                contentDiv.innerHTML = parseMessageWithFormatting(text);
+                lastBotMessage = text.toLowerCase();
+            } else {
+                contentDiv.textContent = text;
+            }
+            
+            messageDiv.appendChild(contentDiv);
+            chatMessages.appendChild(messageDiv);
+            
+            if (isBot) {
+                showOptionsIfNeeded(text);
+            }
+            
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function showOptionsIfNeeded(botMessage) {
+            const lowerMsg = botMessage.toLowerCase();
+            let options = null;
+            
+            // Remove any existing chips
+            const existingChips = document.getElementById('option-chips-container');
+            if (existingChips) existingChips.remove();
+            
+            // CORRECT CHIP DETECTION FOR EACH QUESTION
+            
+            // Question 4: Educational Qualification chips
+            if ((lowerMsg.includes('educational qualification') || 
+                 lowerMsg.includes('highest qualification')) &&
+                !lowerMsg.includes('describes you')) {
+                options = ['10th', '12th / Diploma', "Bachelor's", "Master's"];
+                console.log('✅ Detected EDUCATIONAL QUALIFICATION question - showing chips');
+            }
+            // Question 5: Current Status chips
+            else if (lowerMsg.includes('describes you') && lowerMsg.includes('right now')) {
+                options = ['Student', 'Fresher', 'Working Professional', 'Job Switching'];
+                console.log('✅ Detected CURRENT STATUS question - showing chips');
+            }
+            // Question 6: Interest chips
+            else if (lowerMsg.includes('interested in learning') || 
+                     (lowerMsg.includes('most interested') && lowerMsg.includes('learning'))) {
+                options = ['Coding', 'Digital Marketing', 'Design', 'Trading / Finance', 'Data & Analytics', 'Government Exams'];
+                console.log('✅ Detected INTERESTS question - showing chips');
+            }
+            
+            if (options) {
+                setTimeout(() => {
+                    showOptionChips(options);
+                    userInput.disabled = true;
+                    sendBtn.disabled = true;
+                }, 50);
+            } else {
+                console.log('ℹ️ No chips detected for message:', botMessage.substring(0, 100));
+            }
+        }
+
+        function showOptionChips(options) {
+            const chipsContainer = document.createElement('div');
+            chipsContainer.className = 'message bot';
+            chipsContainer.id = 'option-chips-container';
+            
+            const chipsWrapper = document.createElement('div');
+            chipsWrapper.className = 'option-chips';
+            
+            options.forEach(option => {
+                const chip = document.createElement('button');
+                chip.className = 'option-chip';
+                chip.textContent = option;
+                chip.onclick = () => handleOptionClick(option);
+                chipsWrapper.appendChild(chip);
+            });
+            
+            chipsContainer.appendChild(chipsWrapper);
+            chatMessages.appendChild(chipsContainer);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        async function handleOptionClick(option) {
+            console.log('User clicked option:', option);
+            
+            // Remove chips
+            const chipsContainer = document.getElementById('option-chips-container');
+            if (chipsContainer) chipsContainer.remove();
+            
+            // Show selection as user message
+            const selectionDiv = document.createElement('div');
+            selectionDiv.className = 'message user';
+            selectionDiv.innerHTML = `<div class="message-content">${option}</div>`;
+            chatMessages.appendChild(selectionDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // Keep input disabled while processing
+            userInput.disabled = true;
+            sendBtn.disabled = true;
+            
+            // Send message and get response
+            showTypingIndicator();
+            const response = await sendMessage(option);
+            removeTypingIndicator();
+            
+            if (response) {
+                addMessage(response, true);
+            }
+            
+            // Re-enable input if no new chips
+            setTimeout(() => {
+                const hasChips = document.getElementById('option-chips-container');
+                if (!hasChips) {
+                    userInput.disabled = false;
+                    sendBtn.disabled = false;
+                    userInput.focus();
+                }
+            }, 100);
+        }
+
+        function parseMessageWithFormatting(text) {
+            // Bold text
+            text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            // Line breaks
+            text = text.replace(/\n/g, '<br>');
+            
+            // Course recommendations
+            if (text.toLowerCase().includes('recommend') || 
+                text.toLowerCase().includes('course') ||
+                text.toLowerCase().includes('perfect for you')) {
+                const coursePattern = /(?:^|\n)(?:\d+\.\s+)?\*\*([^*]+)\*\*\s*\n([^\n]+(?:\n(?!\*\*)[^\n]+)*)/gm;
+                text = text.replace(coursePattern, (match, title, description) => {
+                    return `<div class="course-recommendation">
+                        <h3>${title.trim()}</h3>
+                        <p>${description.trim()}</p>
+                    </div>`;
+                });
+            }
+            
+            return text;
+        }
+
+        function showTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message bot';
+            typingDiv.id = 'typing-indicator';
+            typingDiv.innerHTML = `
+                <div class="typing-indicator">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            `;
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function removeTypingIndicator() {
+            const typing = document.getElementById('typing-indicator');
+            if (typing) typing.remove();
+        }
+
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.innerHTML = `<strong>Error:</strong> ${message}`;
+            chatMessages.appendChild(errorDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        async function sendMessage(userMessage) {
+            try {
+                conversationHistory.push({
+                    role: 'user',
+                    content: userMessage
+                });
+
+                console.log('📤 Sending to:', APPS_SCRIPT_URL);
+                console.log('📝 Message count:', conversationHistory.length);
+
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain',
+                    },
+                    body: JSON.stringify({
+                        action: 'chat',
+                        sessionId: sessionId,
+                        conversationHistory: conversationHistory
+                    })
+                });
+
+                console.log('📥 Response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`Server returned ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('✅ Response data:', data);
+                
+                if (data.success) {
+                    conversationHistory.push({
+                        role: 'assistant',
+                        content: data.message
+                    });
+                    
+                    return data.message;
+                } else {
+                    console.error('❌ API Error:', data.error);
+                    showError(data.error || 'Unknown error occurred');
+                    return null;
+                }
+            } catch (error) {
+                console.error('❌ Error:', error);
+                showError(`Connection failed: ${error.message}. Please check your setup and try again.`);
+                return null;
+            }
+        }
+
+        async function handleSendMessage() {
+            const message = userInput.value.trim();
+            if (!message) return;
+
+            if (!hasStarted) {
+                const welcome = chatMessages.querySelector('.welcome-message');
+                if (welcome) welcome.remove();
+                hasStarted = true;
+            }
+
+            addMessage(message, false);
+            userInput.value = '';
+            userInput.disabled = true;
+            sendBtn.disabled = true;
+
+            showTypingIndicator();
+            const response = await sendMessage(message);
+            removeTypingIndicator();
+
+            if (response) {
+                addMessage(response, true);
+            }
+
+            // Only re-enable if no chips are showing
+            setTimeout(() => {
+                const hasChips = document.getElementById('option-chips-container');
+                if (!hasChips) {
+                    userInput.disabled = false;
+                    sendBtn.disabled = false;
+                    userInput.focus();
+                }
+            }, 100);
+        }
+
+        sendBtn.addEventListener('click', handleSendMessage);
+        
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSendMessage();
+            }
+        });
+
+        // Initialize
+        userInput.focus();
+
+        console.log('🚀 Chat initialized with session ID:', sessionId);
+    </script>
+</body>
+</html>
