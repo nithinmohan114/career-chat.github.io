@@ -14,19 +14,25 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             background: #f8f9fa;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
         }
 
+        /* Chat Container - Full viewport height */
         .chat-container {
             width: 100%;
             max-width: 100%;
-            height: 600px;
+            height: 100vh;
             background: #ffffff;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
             display: flex;
             flex-direction: column;
-            overflow: hidden;
-            border: 1px solid #e8e8e8;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
         }
 
         .chat-header {
@@ -50,8 +56,10 @@
         .chat-messages {
             flex: 1;
             overflow-y: auto;
+            overflow-x: hidden;
             padding: 20px;
             background: #f8f9fa;
+            min-height: 0; /* Important for flexbox scrolling */
         }
 
         .chat-messages::-webkit-scrollbar {
@@ -115,9 +123,10 @@
         }
 
         .chat-input-area {
-            padding: 20px;
+            padding: 16px 20px;
             background: white;
             border-top: 1px solid #e8e8e8;
+            flex-shrink: 0; /* Prevent input area from shrinking */
         }
 
         .input-wrapper {
@@ -284,16 +293,24 @@
 
         @media (max-width: 768px) {
             .chat-container {
-                height: 500px;
-                border-radius: 12px;
+                height: 100vh;
+                border-radius: 0;
             }
 
             .chat-header {
-                padding: 20px;
+                padding: 16px 20px;
             }
 
             .chat-header h1 {
                 font-size: 18px;
+            }
+
+            .chat-header p {
+                font-size: 13px;
+            }
+
+            .chat-messages {
+                padding: 16px;
             }
 
             .message-content {
@@ -304,6 +321,35 @@
             .option-chip {
                 padding: 10px 20px;
                 font-size: 14px;
+            }
+
+            .chat-input-area {
+                padding: 12px 16px;
+            }
+
+            #userInput {
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+        }
+
+        /* Desktop styles - centered container */
+        @media (min-width: 769px) {
+            body {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            }
+
+            .chat-container {
+                position: relative;
+                width: 100%;
+                max-width: 480px;
+                height: 90vh;
+                max-height: 800px;
+                border-radius: 16px;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+                overflow: hidden;
             }
         }
     </style>
@@ -337,7 +383,7 @@
         const sendBtn = document.getElementById('sendBtn');
 
         // REPLACE WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby2_S6QRdcQbZavlz8JE1klZ7qZ8COIznlQZpjcb6OD8R_qcI3klenFLgWyH2WRDakK/exec';
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxEZ_Vsj7x3amgLABULOJMfeQtM_3WXDZ-jLJ_y75y53j9ufe98Hoy1CvkVzd0AJd0O/exec';
 
         let conversationHistory = [];
         let hasStarted = false;
