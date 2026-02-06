@@ -303,6 +303,47 @@
             border-left: 3px solid #c33;
         }
 
+        /* Autocomplete suggestions */
+        .suggestions-container {
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #e8e8e8;
+            border-radius: 12px 12px 0 0;
+            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+            z-index: 1000;
+        }
+
+        .suggestions-container.active {
+            display: block;
+        }
+
+        .suggestion-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.2s;
+            font-size: 15px;
+        }
+
+        .suggestion-item:hover {
+            background: #f8f9fa;
+        }
+
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        .suggestion-highlight {
+            color: #1E40AF;
+            font-weight: 600;
+        }
+
         @media (max-width: 768px) {
             .chat-header {
                 padding: 16px 20px;
@@ -373,6 +414,7 @@
         </div>
         
         <div class="chat-input-area">
+            <div class="suggestions-container" id="suggestionsContainer"></div>
             <div class="input-wrapper">
                 <input type="text" id="userInput" placeholder="Type your message..." autocomplete="off">
                 <button id="sendBtn">Send</button>
@@ -384,14 +426,105 @@
         const chatMessages = document.getElementById('chatMessages');
         const userInput = document.getElementById('userInput');
         const sendBtn = document.getElementById('sendBtn');
+        const suggestionsContainer = document.getElementById('suggestionsContainer');
 
         // REPLACE WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzvjARdh_KE1BeupnI4zwdxJ-UBIckWS0HnQD0Q1ObrkgpYqaAyqt9zEHo-WLkVV0vn/exec';
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzRONFoCaACdydH4kaR3wmgxOzlo4yR9LyqIRuE3ZZIC6qrbPfv8tGBwd-rlpfU9bA/exec';
 
         let conversationHistory = [];
         let hasStarted = false;
         let sessionId = Date.now() + '-' + Math.random().toString(36).substr(2, 9);
         let lastBotMessage = '';
+        let showingSuggestions = false;
+
+        // Interest suggestions based on popular categories
+        const interestSuggestions = [
+            'Coding',
+            'Data Science',
+            'Web Development',
+            'Mobile App Development',
+            'Digital Marketing',
+            'Government Jobs',
+            'Kerala PSC',
+            'SSC',
+            'Railway',
+            'Banking',
+            'Stock Market',
+            'Trading',
+            'Finance',
+            'Teaching',
+            'UPSC',
+            'Defence',
+            'Spoken English',
+            'IELTS',
+            'Design',
+            'UI/UX Design',
+            'Excel',
+            'Business'
+        ];
+
+        // Check if we should show suggestions
+        function shouldShowSuggestions() {
+            // Only show suggestions for the interest question
+            return lastBotMessage.includes('interested in learning');
+        }
+
+        // Show autocomplete suggestions
+        function showSuggestions(inputValue) {
+            if (!shouldShowSuggestions() || !inputValue.trim()) {
+                hideSuggestions();
+                return;
+            }
+
+            const filtered = interestSuggestions.filter(suggestion =>
+                suggestion.toLowerCase().includes(inputValue.toLowerCase())
+            );
+
+            if (filtered.length === 0) {
+                hideSuggestions();
+                return;
+            }
+
+            suggestionsContainer.innerHTML = '';
+            filtered.slice(0, 5).forEach(suggestion => {
+                const item = document.createElement('div');
+                item.className = 'suggestion-item';
+                
+                // Highlight matching text
+                const regex = new RegExp(`(${inputValue})`, 'gi');
+                const highlighted = suggestion.replace(regex, '<span class="suggestion-highlight">$1</span>');
+                item.innerHTML = highlighted;
+                
+                item.onclick = () => selectSuggestion(suggestion);
+                suggestionsContainer.appendChild(item);
+            });
+
+            suggestionsContainer.classList.add('active');
+            showingSuggestions = true;
+        }
+
+        function hideSuggestions() {
+            suggestionsContainer.classList.remove('active');
+            showingSuggestions = false;
+        }
+
+        function selectSuggestion(suggestion) {
+            userInput.value = suggestion;
+            hideSuggestions();
+            userInput.focus();
+        }
+
+        // Input event listener for autocomplete
+        userInput.addEventListener('input', (e) => {
+            showSuggestions(e.target.value);
+        });
+
+        // Hide suggestions when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!suggestionsContainer.contains(e.target) && e.target !== userInput) {
+                hideSuggestions();
+            }
+        });
 
         function addMessage(text, isBot = true) {
             const messageDiv = document.createElement('div');
@@ -430,7 +563,7 @@
                 existingChips.remove();
             }
             
-            // CORRECT CHIP DETECTION FOR EACH QUESTION
+            // CHIP DETECTION - ONLY FOR QUALIFICATION AND STATUS
             
             // Question 4: Educational Qualification chips
             if ((lowerMsg.includes('educational qualification') || 
@@ -447,13 +580,8 @@
                 options = ['Student', 'Fresher', 'Working Professional', 'Job Switching'];
                 console.log('✅ Detected CURRENT STATUS question - showing chips');
             }
-            // Question 6: Interest chips
-            else if (lowerMsg.includes('interested in learning') || 
-                     (lowerMsg.includes('most interested') && lowerMsg.includes('learning')) ||
-                     lowerMsg.includes('what are you most interested')) {
-                options = ['Coding', 'Digital Marketing', 'Design', 'Trading / Finance', 'Data & Analytics', 'Government Exams'];
-                console.log('✅ Detected INTERESTS question - showing chips');
-            }
+            // Question 6: NO CHIPS for interests - user types freely
+            // (removed interest chip detection completely)
             
             if (options) {
                 console.log('📋 Showing chips:', options);
@@ -467,7 +595,10 @@
                     sendBtn.disabled = true;
                 }, delay);
             } else {
-                console.log('ℹ️ No chips detected for message');
+                console.log('ℹ️ No chips - user can type freely');
+                // Make sure input is enabled for typing
+                userInput.disabled = false;
+                sendBtn.disabled = false;
             }
         }
 
@@ -633,6 +764,9 @@
         async function handleSendMessage() {
             const message = userInput.value.trim();
             if (!message) return;
+
+            // Hide suggestions when sending
+            hideSuggestions();
 
             if (!hasStarted) {
                 const welcome = chatMessages.querySelector('.welcome-message');
