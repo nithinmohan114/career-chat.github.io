@@ -262,6 +262,125 @@
             line-height: 1.6;
         }
 
+        /* Pre-Chat Registration Form */
+        .pre-chat-form {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background: #f8f9fa;
+        }
+
+        .pre-chat-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            background: white;
+        }
+
+        .entri-logo {
+            max-width: 180px;
+            height: auto;
+            margin-bottom: 24px;
+        }
+
+        .pre-chat-content h2 {
+            color: #1E40AF;
+            font-size: 22px;
+            margin-bottom: 8px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .pre-chat-content > p {
+            color: #666;
+            font-size: 15px;
+            margin-bottom: 32px;
+            text-align: center;
+        }
+
+        #registrationForm {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            color: #374151;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #3B82F6;
+        }
+
+        .form-group input.error {
+            border-color: #EF4444;
+        }
+
+        .error-text {
+            display: block;
+            color: #EF4444;
+            font-size: 13px;
+            margin-top: 4px;
+            min-height: 18px;
+        }
+
+        .start-chat-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 8px;
+        }
+
+        .start-chat-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);
+        }
+
+        .start-chat-btn:active {
+            transform: translateY(0);
+        }
+
+        .start-chat-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .chat-interface {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
         .option-chips {
             display: flex;
             flex-wrap: wrap;
@@ -399,69 +518,222 @@
     </style>
 </head>
 <body>
-    <div class="chat-container">
-        <div class="chat-header">
-            <h1>🎓 Find Your Perfect Course</h1>
-            <p>Let's help you discover the right path!</p>
-        </div>
-        
-        <div class="chat-messages" id="chatMessages">
-            <div class="welcome-message">
-                <h2>Hey there! 👋</h2>
-                <p>I'm here to help you find the perfect course for your goals. Let's have a quick chat!</p>
-                <p style="margin-top: 12px; font-size: 14px;">Just say hi to get started 😊</p>
+    <div class="chat-container" id="chatContainer">
+        <!-- Pre-Chat Registration Form -->
+        <div class="pre-chat-form" id="preChatForm">
+            <div class="pre-chat-content">
+                <img src="https://cloudfront.entri.app/entri-logo/Entri-logo-new-512x188.svg" alt="Entri" class="entri-logo">
+                <h2>Get Personalized Course Recommendations</h2>
+                <p>Tell us a bit about yourself to get started</p>
+                
+                <form id="registrationForm" onsubmit="return false;">
+                    <div class="form-group">
+                        <label for="userName">Name *</label>
+                        <input type="text" id="userName" placeholder="Enter your name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="userPhone">Phone Number *</label>
+                        <input type="tel" id="userPhone" placeholder="Enter 10-digit mobile number" maxlength="10" required>
+                        <span class="error-text" id="phoneError"></span>
+                    </div>
+                    
+                    <button type="submit" class="start-chat-btn" id="startChatBtn">Let's Talk 💬</button>
+                </form>
             </div>
         </div>
-        
-        <div class="chat-input-area">
-            <div class="suggestions-container" id="suggestionsContainer"></div>
-            <div class="input-wrapper">
-                <input type="text" id="userInput" placeholder="Type your message..." autocomplete="off">
-                <button id="sendBtn">Send</button>
+
+        <!-- Chat Interface (hidden initially) -->
+        <div class="chat-interface" id="chatInterface" style="display: none;">
+            <div class="chat-header">
+                <h1>🎓 Find Your Perfect Course</h1>
+                <p>Let's help you discover the right path!</p>
+            </div>
+            
+            <div class="chat-messages" id="chatMessages">
+                <div class="welcome-message">
+                    <h2>Hey <span id="userNameDisplay"></span>! 👋</h2>
+                    <p>I'm here to help you explore courses that match your interests and goals.</p>
+                    <p style="margin-top: 12px; font-size: 14px;">Let's get started 😊</p>
+                </div>
+            </div>
+            
+            <div class="chat-input-area">
+                <div class="suggestions-container" id="suggestionsContainer"></div>
+                <div class="input-wrapper">
+                    <input type="text" id="userInput" placeholder="Type your message..." autocomplete="off">
+                    <button id="sendBtn">Send</button>
+                </div>
             </div>
         </div>
     </div>
+
+    <!-- Remove Registration Button and Modal (not needed anymore) -->
 
     <script>
         const chatMessages = document.getElementById('chatMessages');
         const userInput = document.getElementById('userInput');
         const sendBtn = document.getElementById('sendBtn');
         const suggestionsContainer = document.getElementById('suggestionsContainer');
+        const preChatForm = document.getElementById('preChatForm');
+        const chatInterface = document.getElementById('chatInterface');
+        const registrationForm = document.getElementById('registrationForm');
+        const userNameInput = document.getElementById('userName');
+        const userPhoneInput = document.getElementById('userPhone');
+        const phoneError = document.getElementById('phoneError');
+        const startChatBtn = document.getElementById('startChatBtn');
 
         // REPLACE WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzRONFoCaACdydH4kaR3wmgxOzlo4yR9LyqIRuE3ZZIC6qrbPfv8tGBwd-rlpfU9bA/exec';
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzkmABvXl367Yh2TQYUhvSt-TaULs5tXWL5ERIFutrAJUk8usrC2DEVtcOHfvQe03O-/exec';
 
         let conversationHistory = [];
         let hasStarted = false;
         let sessionId = Date.now() + '-' + Math.random().toString(36).substr(2, 9);
         let lastBotMessage = '';
-        let showingSuggestions = false;
+        let userName = '';
+        let userPhone = '';
 
-        // Interest suggestions based on popular categories
-        const interestSuggestions = [
-            'Coding',
-            'Data Science',
-            'Web Development',
-            'Mobile App Development',
-            'Digital Marketing',
-            'Government Jobs',
-            'Kerala PSC',
-            'SSC',
-            'Railway',
-            'Banking',
-            'Stock Market',
-            'Trading',
-            'Finance',
-            'Teaching',
-            'UPSC',
-            'Defence',
-            'Spoken English',
-            'IELTS',
-            'Design',
-            'UI/UX Design',
-            'Excel',
-            'Business'
-        ];
+        // Phone number validation (Indian format)
+        function validatePhone(phone) {
+            const cleaned = phone.replace(/\D/g, '');
+            
+            // Must be exactly 10 digits
+            if (cleaned.length !== 10) {
+                return { valid: false, message: 'Phone number must be 10 digits' };
+            }
+            
+            // Must start with 6-9 (Indian mobile numbers)
+            if (!['6', '7', '8', '9'].includes(cleaned[0])) {
+                return { valid: false, message: 'Phone number must start with 6, 7, 8, or 9' };
+            }
+            
+            return { valid: true, cleaned: cleaned };
+        }
+
+        // Real-time phone validation
+        userPhoneInput.addEventListener('input', (e) => {
+            const value = e.target.value;
+            const cleaned = value.replace(/\D/g, '');
+            
+            // Only allow digits and limit to 10
+            if (cleaned !== value) {
+                e.target.value = cleaned;
+            }
+            
+            // Clear error when typing
+            if (phoneError.textContent) {
+                phoneError.textContent = '';
+                userPhoneInput.classList.remove('error');
+            }
+        });
+
+        // Handle registration form submission
+        registrationForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = userNameInput.value.trim();
+            const phone = userPhoneInput.value.trim();
+            
+            // Validate name
+            if (!name || name.length < 2) {
+                userNameInput.focus();
+                return;
+            }
+            
+            // Validate phone
+            const phoneValidation = validatePhone(phone);
+            if (!phoneValidation.valid) {
+                phoneError.textContent = phoneValidation.message;
+                userPhoneInput.classList.add('error');
+                return;
+            }
+            
+            // Store user data
+            userName = name;
+            userPhone = phoneValidation.cleaned;
+            
+            // Save registration to sheet immediately
+            startChatBtn.disabled = true;
+            startChatBtn.textContent = 'Starting...';
+            
+            try {
+                await saveRegistration();
+                
+                // Show chat interface
+                preChatForm.style.display = 'none';
+                chatInterface.style.display = 'flex';
+                
+                // Update welcome message with user's name
+                document.getElementById('userNameDisplay').textContent = userName;
+                
+                // Auto-start conversation
+                setTimeout(() => {
+                    const welcomeMsg = chatMessages.querySelector('.welcome-message');
+                    if (welcomeMsg) welcomeMsg.remove();
+                    
+                    // Send automatic first message
+                    handleAutoStart();
+                }, 500);
+                
+            } catch (error) {
+                console.error('Registration error:', error);
+                phoneError.textContent = 'Something went wrong. Please try again.';
+                startChatBtn.disabled = false;
+                startChatBtn.textContent = "Let's Talk 💬";
+            }
+        });
+
+        // Save registration immediately to sheet
+        async function saveRegistration() {
+            try {
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain',
+                    },
+                    body: JSON.stringify({
+                        action: 'register',
+                        sessionId: sessionId,
+                        name: userName,
+                        phone: userPhone
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (!data.success) {
+                    throw new Error(data.error || 'Registration failed');
+                }
+                
+                console.log('✅ User registered:', userName, userPhone);
+                
+            } catch (error) {
+                console.error('Save registration error:', error);
+                throw error;
+            }
+        }
+
+        // Auto-start conversation with user info
+        async function handleAutoStart() {
+            hasStarted = true;
+            userInput.focus();
+            
+            // Add initial bot message
+            showTypingIndicator();
+            
+            // Send user info to AI to start conversation
+            const introMessage = `Hi! My name is ${userName}.`;
+            const response = await sendMessage(introMessage);
+            
+            removeTypingIndicator();
+            
+            if (response) {
+                addMessage(response, true);
+            }
+            
+            userInput.disabled = false;
+            sendBtn.disabled = false;
+        }
 
         // Check if we should show suggestions
         function shouldShowSuggestions() {
@@ -667,10 +939,37 @@
             // Line breaks
             text = text.replace(/\n/g, '<br>');
             
-            // Course recommendations
+            // Highlight category badges in recommendations
+            const categoryBadges = {
+                '🔧 Technical Builder': '#3B82F6',
+                '📱 Creative Communicator': '#8B5CF6',
+                '🎨 Visual Creator': '#EC4899',
+                '💰 Numbers Person': '#10B981',
+                '🏛️ Stability Seeker': '#F59E0B',
+                '👨‍🏫 Educator': '#06B6D4',
+                '🗣️ Communicator': '#6366F1',
+                '⚕️ Healthcare Professional': '#EF4444',
+                '⚙️ Engineering Professional': '#14B8A6',
+                '💼 Business Professional': '#8B5CF6'
+            };
+            
+            Object.keys(categoryBadges).forEach(badge => {
+                const color = categoryBadges[badge];
+                const badgeHtml = `<span style="display: inline-block; background: ${color}; color: white; padding: 4px 12px; border-radius: 12px; font-size: 13px; font-weight: 600; margin: 4px 0;">${badge}</span>`;
+                text = text.replace(badge, badgeHtml);
+            });
+            
+            // Course recommendations with better styling
             if (text.toLowerCase().includes('recommend') || 
                 text.toLowerCase().includes('course') ||
-                text.toLowerCase().includes('perfect for you')) {
+                text.toLowerCase().includes('perfect for you') ||
+                text.toLowerCase().includes('primary recommendation')) {
+                
+                // Style PRIMARY RECOMMENDATION differently
+                text = text.replace(/PRIMARY RECOMMENDATION:/g, '<div style="margin: 12px 0; padding: 8px; background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%); color: white; border-radius: 8px; font-weight: 600;">🎯 PRIMARY RECOMMENDATION</div>');
+                
+                text = text.replace(/ALTERNATIVE OPTIONS:/g, '<div style="margin: 12px 0; padding: 8px; background: #F3F4F6; border-radius: 8px; font-weight: 600; color: #374151;">💡 ALTERNATIVE OPTIONS</div>');
+                
                 const coursePattern = /(?:^|\n)(?:\d+\.\s+)?\*\*([^*]+)\*\*\s*\n([^\n]+(?:\n(?!\*\*)[^\n]+)*)/gm;
                 text = text.replace(coursePattern, (match, title, description) => {
                     return `<div class="course-recommendation">
@@ -719,7 +1018,6 @@
                 });
 
                 console.log('📤 Sending to:', APPS_SCRIPT_URL);
-                console.log('📝 Message count:', conversationHistory.length);
 
                 const response = await fetch(APPS_SCRIPT_URL, {
                     method: 'POST',
@@ -756,7 +1054,7 @@
                 }
             } catch (error) {
                 console.error('❌ Error:', error);
-                showError(`Connection failed: ${error.message}. Please check your setup and try again.`);
+                showError(`Connection failed: ${error.message}`);
                 return null;
             }
         }
