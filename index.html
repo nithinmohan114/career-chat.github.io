@@ -1,1025 +1,1056 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#1E40AF">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Entri Course Chat</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: #f8f9fa;
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            height: 100dvh;
-            overflow: hidden;
-            position: fixed;
-            width: 100%;
-        }
-
-        .chat-container {
-            width: 100%;
-            height: 100vh;
-            height: 100dvh;
-            background: #ffffff;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .chat-header {
-            background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
-            color: white;
-            padding: 20px 24px;
-            padding-top: max(20px, env(safe-area-inset-top));
-            text-align: center;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            flex-shrink: 0;
-        }
-
-        .chat-header h1 {
-            font-size: 22px;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-
-        .chat-header p {
-            font-size: 14px;
-            opacity: 0.95;
-        }
-
-        .chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            overflow-x: hidden;
-            padding: 20px;
-            padding-bottom: 80px;
-            background: #f8f9fa;
-            min-height: 0;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .chat-messages::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .chat-messages::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-
-        .chat-messages::-webkit-scrollbar-thumb {
-            background: #3B82F6;
-            border-radius: 3px;
-        }
-
-        .message {
-            margin-bottom: 16px;
-            display: flex;
-            animation: slideIn 0.3s ease-out;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .message.bot {
-            justify-content: flex-start;
-        }
-
-        .message.user {
-            justify-content: flex-end;
-        }
-
-        .message-content {
-            max-width: 75%;
-            padding: 12px 16px;
-            border-radius: 12px;
-            word-wrap: break-word;
-            line-height: 1.6;
-            font-size: 15px;
-        }
-
-        .message.bot .message-content {
-            background: #ffffff;
-            color: #333;
-            border: 1px solid #e8e8e8;
-            border-bottom-left-radius: 4px;
-        }
-
-        .message.user .message-content {
-            background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
-            color: white;
-            border-bottom-right-radius: 4px;
-        }
-
-        .chat-input-area {
-            padding: 16px 20px;
-            padding-bottom: max(16px, env(safe-area-inset-bottom));
-            background: white;
-            border-top: 1px solid #e8e8e8;
-            flex-shrink: 0;
-            position: relative;
-            z-index: 10;
-        }
-
-        .input-wrapper {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        #userInput {
-            flex: 1;
-            padding: 12px 16px;
-            border: 1px solid #e8e8e8;
-            border-radius: 24px;
-            font-size: 15px;
-            outline: none;
-            transition: border-color 0.3s;
-            font-family: inherit;
-        }
-
-        #userInput:focus {
-            border-color: #3B82F6;
-        }
-
-        #sendBtn {
-            padding: 12px 24px;
-            background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
-            color: white;
-            border: none;
-            border-radius: 24px;
-            cursor: pointer;
-            font-size: 15px;
-            font-weight: 600;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        #sendBtn:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-        }
-
-        #sendBtn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .typing-indicator {
-            display: flex;
-            gap: 4px;
-            padding: 12px 16px;
-            background: white;
-            border: 1px solid #e8e8e8;
-            border-radius: 12px;
-            border-bottom-left-radius: 4px;
-            width: fit-content;
-        }
-
-        .typing-indicator span {
-            width: 8px;
-            height: 8px;
-            background: #3B82F6;
-            border-radius: 50%;
-            animation: typing 1.4s infinite ease-in-out;
-        }
-
-        .typing-indicator span:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-
-        .typing-indicator span:nth-child(3) {
-            animation-delay: 0.4s;
-        }
-
-        @keyframes typing {
-            0%, 60%, 100% {
-                transform: scale(0.8);
-                opacity: 0.5;
-            }
-            30% {
-                transform: scale(1.2);
-                opacity: 1;
-            }
-        }
-
-        .course-recommendation {
-            background: linear-gradient(135deg, rgba(30, 64, 175, 0.08) 0%, rgba(59, 130, 246, 0.08) 100%);
-            padding: 16px;
-            border-radius: 12px;
-            margin-top: 10px;
-            border-left: 3px solid #3B82F6;
-        }
-
-        .course-recommendation h3 {
-            color: #1E40AF;
-            margin-bottom: 8px;
-            font-size: 16px;
-            font-weight: 600;
-        }
-
-        .course-recommendation p {
-            color: #555;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-
-        /* Pre-Chat Registration Form */
-        .pre-chat-form {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            background: #f8f9fa;
-        }
-
-        .pre-chat-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 40px 20px;
-            background: white;
-        }
-
-        .entri-logo {
-            max-width: 180px;
-            height: auto;
-            margin-bottom: 24px;
-        }
-
-        .pre-chat-content h2 {
-            color: #1E40AF;
-            font-size: 22px;
-            margin-bottom: 8px;
-            font-weight: 600;
-            text-align: center;
-        }
-
-        .pre-chat-content > p {
-            color: #666;
-            font-size: 15px;
-            margin-bottom: 32px;
-            text-align: center;
-        }
-
-        #registrationForm {
-            width: 100%;
-            max-width: 400px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-            text-align: left;
-        }
-
-        .form-group label {
-            display: block;
-            color: #374151;
-            font-weight: 600;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e5e7eb;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-            font-family: inherit;
-        }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: #3B82F6;
-        }
-
-        .form-group input.error {
-            border-color: #EF4444;
-        }
-
-        .error-text {
-            display: block;
-            color: #EF4444;
-            font-size: 13px;
-            margin-top: 4px;
-            min-height: 18px;
-        }
-
-        .start-chat-btn {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-top: 8px;
-        }
-
-        .start-chat-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);
-        }
-
-        .start-chat-btn:active {
-            transform: translateY(0);
-        }
-
-        .start-chat-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .chat-interface {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-        }
-
-        /* Conversation Starter Chips */
-        .conversation-starters {
-            padding: 20px;
-            background: #f8f9fa;
-        }
-
-        .starters-container {
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .bot-message-intro {
-            background: white;
-            padding: 12px 16px;
-            border-radius: 12px;
-            border-bottom-left-radius: 4px;
-            margin-bottom: 16px;
-            border: 1px solid #e8e8e8;
-        }
-
-        .chips-wrapper {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 11px;
-            margin-top: 12px;
-        }
-
-        .starter-chip {
-            background: white;
-            border: 1px solid #F0F0F0;
-            padding: 8px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 12px;
-            color: #212121;
-            transition: all 0.2s;
-            font-family: inherit;
-            letter-spacing: 0.25px;
-        }
-
-        .starter-chip:hover {
-            background: #f8f9fa;
-            border-color: #3B82F6;
-            transform: translateY(-2px);
-        }
-
-        .starter-chip:active {
-            transform: translateY(0);
-        }
-
-        .option-chips {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 12px;
-            padding: 0 4px;
-        }
-
-        .option-chip {
-            background: #0066CC;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 24px;
-            border: none;
-            cursor: pointer;
-            font-size: 15px;
-            font-weight: 500;
-            transition: all 0.2s;
-            font-family: inherit;
-        }
-
-        .option-chip:hover {
-            background: #0052A3;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
-        }
-
-        .option-chip:active {
-            transform: translateY(0);
-        }
-
-        .error-message {
-            background: #fee;
-            color: #c33;
-            padding: 12px;
-            border-radius: 8px;
-            margin: 10px 0;
-            font-size: 14px;
-            border-left: 3px solid #c33;
-        }
-
-        @media (max-width: 768px) {
-            .chat-header {
-                padding: 16px 20px;
-                padding-top: max(16px, calc(env(safe-area-inset-top) + 8px));
-            }
-
-            .chat-header h1 {
-                font-size: 17px;
-            }
-
-            .chat-header p {
-                font-size: 13px;
-            }
-
-            .chat-messages {
-                padding: 16px;
-            }
-
-            .message-content {
-                max-width: 85%;
-                font-size: 14px;
-                padding: 10px 14px;
-            }
-
-            .option-chip {
-                padding: 10px 18px;
-                font-size: 14px;
-            }
-
-            .chat-input-area {
-                padding: 12px 16px;
-                padding-bottom: max(12px, calc(env(safe-area-inset-bottom) + 8px));
-            }
-
-            #userInput {
-                font-size: 16px;
-                padding: 10px 16px;
-            }
-
-            #sendBtn {
-                padding: 10px 20px;
-                font-size: 14px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="chat-container" id="chatContainer">
-        <!-- Pre-Chat Registration Form -->
-        <div class="pre-chat-form" id="preChatForm">
-            <div class="pre-chat-content">
-                <img src="https://cloudfront.entri.app/entri-logo/Entri-logo-new-512x188.svg" alt="Entri" class="entri-logo">
-                <h2>Get Personalized Course Recommendations</h2>
-                <p>Enter your phone number to get started</p>
-                
-                <form id="registrationForm" onsubmit="return false;">
-                    <div class="form-group">
-                        <label for="userPhone">Phone Number *</label>
-                        <input type="tel" id="userPhone" placeholder="Enter 10-digit mobile number" maxlength="10" required>
-                        <span class="error-text" id="phoneError"></span>
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+            <meta name="apple-mobile-web-app-capable" content="yes">
+            <meta name="mobile-web-app-capable" content="yes">
+            <meta name="theme-color" content="#1E40AF">
+            <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+            <title>Entri Course Chat</title>
+            <style>
+                * {
+                    margin: 0;
+                    padding: 0;
+                    box-sizing: border-box;
+                }
+        
+                body {
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                    background: #f8f9fa;
+                    margin: 0;
+                    padding: 0;
+                    height: 100vh;
+                    height: 100dvh;
+                    overflow: hidden;
+                    position: fixed;
+                    width: 100%;
+                }
+        
+                .chat-container {
+                    width: 100%;
+                    height: 100vh;
+                    height: 100dvh;
+                    background: #ffffff;
+                    display: flex;
+                    flex-direction: column;
+                }
+        
+                .chat-header {
+                    background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+                    color: white;
+                    padding: 20px 24px;
+                    padding-top: max(20px, env(safe-area-inset-top));
+                    text-align: center;
+                    position: sticky;
+                    top: 0;
+                    z-index: 100;
+                    flex-shrink: 0;
+                }
+        
+                .chat-header h1 {
+                    font-size: 22px;
+                    font-weight: 600;
+                    margin-bottom: 4px;
+                }
+        
+                .chat-header p {
+                    font-size: 14px;
+                    opacity: 0.95;
+                }
+        
+                .chat-messages {
+                    flex: 1;
+                    overflow-y: auto;
+                    overflow-x: hidden;
+                    padding: 20px;
+                    padding-bottom: 80px;
+                    background: #f8f9fa;
+                    min-height: 0;
+                    -webkit-overflow-scrolling: touch;
+                }
+        
+                .chat-messages::-webkit-scrollbar {
+                    width: 6px;
+                }
+        
+                .chat-messages::-webkit-scrollbar-track {
+                    background: #f1f1f1;
+                }
+        
+                .chat-messages::-webkit-scrollbar-thumb {
+                    background: #3B82F6;
+                    border-radius: 3px;
+                }
+        
+                .message {
+                    margin-bottom: 16px;
+                    display: flex;
+                    animation: slideIn 0.3s ease-out;
+                }
+        
+                @keyframes slideIn {
+                    from {
+                        opacity: 0;
+                        transform: translateY(10px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+        
+                .message.bot {
+                    justify-content: flex-start;
+                }
+        
+                .message.user {
+                    justify-content: flex-end;
+                }
+        
+                .message-content {
+                    max-width: 75%;
+                    padding: 12px 16px;
+                    border-radius: 12px;
+                    word-wrap: break-word;
+                    line-height: 1.6;
+                    font-size: 15px;
+                }
+        
+                .message.bot .message-content {
+                    background: #ffffff;
+                    color: #333;
+                    border: 1px solid #e8e8e8;
+                    border-bottom-left-radius: 4px;
+                }
+        
+                .message.user .message-content {
+                    background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+                    color: white;
+                    border-bottom-right-radius: 4px;
+                }
+        
+                .chat-input-area {
+                    padding: 16px 20px;
+                    padding-bottom: max(16px, env(safe-area-inset-bottom));
+                    background: white;
+                    border-top: 1px solid #e8e8e8;
+                    flex-shrink: 0;
+                    position: relative;
+                    z-index: 10;
+                }
+        
+                .input-wrapper {
+                    display: flex;
+                    gap: 10px;
+                    align-items: center;
+                }
+        
+                #userInput {
+                    flex: 1;
+                    padding: 12px 16px;
+                    border: 1px solid #e8e8e8;
+                    border-radius: 24px;
+                    font-size: 15px;
+                    outline: none;
+                    transition: border-color 0.3s;
+                    font-family: inherit;
+                }
+        
+                #userInput:focus {
+                    border-color: #3B82F6;
+                }
+        
+                #sendBtn {
+                    padding: 12px 24px;
+                    background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+                    color: white;
+                    border: none;
+                    border-radius: 24px;
+                    cursor: pointer;
+                    font-size: 15px;
+                    font-weight: 600;
+                    transition: transform 0.2s, box-shadow 0.2s;
+                }
+        
+                #sendBtn:hover:not(:disabled) {
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+                }
+        
+                #sendBtn:disabled {
+                    opacity: 0.5;
+                    cursor: not-allowed;
+                    transform: none;
+                }
+        
+                .typing-indicator {
+                    display: flex;
+                    gap: 4px;
+                    padding: 12px 16px;
+                    background: white;
+                    border: 1px solid #e8e8e8;
+                    border-radius: 12px;
+                    border-bottom-left-radius: 4px;
+                    width: fit-content;
+                }
+        
+                .typing-indicator span {
+                    width: 8px;
+                    height: 8px;
+                    background: #3B82F6;
+                    border-radius: 50%;
+                    animation: typing 1.4s infinite ease-in-out;
+                }
+        
+                .typing-indicator span:nth-child(2) {
+                    animation-delay: 0.2s;
+                }
+        
+                .typing-indicator span:nth-child(3) {
+                    animation-delay: 0.4s;
+                }
+        
+                @keyframes typing {
+                    0%, 60%, 100% {
+                        transform: scale(0.8);
+                        opacity: 0.5;
+                    }
+                    30% {
+                        transform: scale(1.2);
+                        opacity: 1;
+                    }
+                }
+        
+                .course-recommendation {
+                    background: linear-gradient(135deg, rgba(30, 64, 175, 0.08) 0%, rgba(59, 130, 246, 0.08) 100%);
+                    padding: 16px;
+                    border-radius: 12px;
+                    margin-top: 10px;
+                    border-left: 3px solid #3B82F6;
+                }
+        
+                .course-recommendation h3 {
+                    color: #1E40AF;
+                    margin-bottom: 8px;
+                    font-size: 16px;
+                    font-weight: 600;
+                }
+        
+                .course-recommendation p {
+                    color: #555;
+                    font-size: 14px;
+                    line-height: 1.5;
+                }
+        
+                /* Pre-Chat Registration Form */
+                .pre-chat-form {
+                    display: flex;
+                    flex-direction: column;
+                    height: 100vh;
+                    background: #f8f9fa;
+                }
+        
+                .pre-chat-content {
+                    flex: 1;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 40px 20px;
+                    background: white;
+                }
+        
+                .entri-logo {
+                    max-width: 180px;
+                    height: auto;
+                    margin-bottom: 24px;
+                }
+        
+                .pre-chat-content h2 {
+                    color: #1E40AF;
+                    font-size: 22px;
+                    margin-bottom: 8px;
+                    font-weight: 600;
+                    text-align: center;
+                }
+        
+                .pre-chat-content > p {
+                    color: #666;
+                    font-size: 15px;
+                    margin-bottom: 32px;
+                    text-align: center;
+                }
+        
+                #registrationForm {
+                    width: 100%;
+                    max-width: 400px;
+                }
+        
+                .form-group {
+                    margin-bottom: 20px;
+                    text-align: left;
+                }
+        
+                .form-group label {
+                    display: block;
+                    color: #374151;
+                    font-weight: 600;
+                    margin-bottom: 8px;
+                    font-size: 14px;
+                }
+        
+                .form-group input {
+                    width: 100%;
+                    padding: 12px 16px;
+                    border: 2px solid #e5e7eb;
+                    border-radius: 8px;
+                    font-size: 16px;
+                    transition: border-color 0.3s;
+                    font-family: inherit;
+                }
+        
+                .form-group input:focus {
+                    outline: none;
+                    border-color: #3B82F6;
+                }
+        
+                .form-group input.error {
+                    border-color: #EF4444;
+                }
+        
+                .error-text {
+                    display: block;
+                    color: #EF4444;
+                    font-size: 13px;
+                    margin-top: 4px;
+                    min-height: 18px;
+                }
+        
+                .start-chat-btn {
+                    width: 100%;
+                    padding: 14px;
+                    background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    font-size: 16px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.3s;
+                    margin-top: 8px;
+                }
+        
+                .start-chat-btn:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);
+                }
+        
+                .start-chat-btn:active {
+                    transform: translateY(0);
+                }
+        
+                .start-chat-btn:disabled {
+                    opacity: 0.6;
+                    cursor: not-allowed;
+                    transform: none;
+                }
+        
+                .chat-interface {
+                    display: flex;
+                    flex-direction: column;
+                    height: 100vh;
+                }
+        
+                /* Conversation Starter Chips */
+                .conversation-starters {
+                    padding: 20px;
+                    background: #f8f9fa;
+                }
+        
+                .starters-container {
+                    max-width: 600px;
+                    margin: 0 auto;
+                }
+        
+                .bot-message-intro {
+                    background: white;
+                    padding: 12px 16px;
+                    border-radius: 12px;
+                    border-bottom-left-radius: 4px;
+                    margin-bottom: 16px;
+                    border: 1px solid #e8e8e8;
+                }
+        
+                .chips-wrapper {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 11px;
+                    margin-top: 12px;
+                }
+        
+                .starter-chip {
+                    background: white;
+                    border: 1px solid #F0F0F0;
+                    padding: 8px 16px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-size: 12px;
+                    color: #212121;
+                    transition: all 0.2s;
+                    font-family: inherit;
+                    letter-spacing: 0.25px;
+                }
+        
+                .starter-chip:hover {
+                    background: #f8f9fa;
+                    border-color: #3B82F6;
+                    transform: translateY(-2px);
+                }
+        
+                .starter-chip:active {
+                    transform: translateY(0);
+                }
+        
+                .option-chips {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 10px;
+                    margin-top: 12px;
+                    padding: 0 4px;
+                }
+        
+                .option-chip {
+                    background: #0066CC;
+                    color: white;
+                    padding: 12px 24px;
+                    border-radius: 24px;
+                    border: none;
+                    cursor: pointer;
+                    font-size: 15px;
+                    font-weight: 500;
+                    transition: all 0.2s;
+                    font-family: inherit;
+                }
+        
+                .option-chip:hover {
+                    background: #0052A3;
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
+                }
+        
+                .option-chip:active {
+                    transform: translateY(0);
+                }
+        
+                .error-message {
+                    background: #fee;
+                    color: #c33;
+                    padding: 12px;
+                    border-radius: 8px;
+                    margin: 10px 0;
+                    font-size: 14px;
+                    border-left: 3px solid #c33;
+                }
+        
+                @media (max-width: 768px) {
+                    .chat-header {
+                        padding: 16px 20px;
+                        padding-top: max(16px, calc(env(safe-area-inset-top) + 8px));
+                    }
+        
+                    .chat-header h1 {
+                        font-size: 17px;
+                    }
+        
+                    .chat-header p {
+                        font-size: 13px;
+                    }
+        
+                    .chat-messages {
+                        padding: 16px;
+                    }
+        
+                    .message-content {
+                        max-width: 85%;
+                        font-size: 14px;
+                        padding: 10px 14px;
+                    }
+        
+                    .option-chip {
+                        padding: 10px 18px;
+                        font-size: 14px;
+                    }
+        
+                    .chat-input-area {
+                        padding: 12px 16px;
+                        padding-bottom: max(12px, calc(env(safe-area-inset-bottom) + 8px));
+                    }
+        
+                    #userInput {
+                        font-size: 16px;
+                        padding: 10px 16px;
+                    }
+        
+                    #sendBtn {
+                        padding: 10px 20px;
+                        font-size: 14px;
+                    }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="chat-container" id="chatContainer">
+                <!-- Pre-Chat Registration Form -->
+                <div class="pre-chat-form" id="preChatForm">
+                    <div class="pre-chat-content">
+                        <img src="https://cloudfront.entri.app/entri-logo/Entri-logo-new-512x188.svg" alt="Entri" class="entri-logo">
+                        <h2>Get Personalized Course Recommendations</h2>
+                        <p>Enter your phone number to get started</p>
+                        
+                        <form id="registrationForm" onsubmit="return false;">
+                            <div class="form-group">
+                                <label for="userPhone">Phone Number *</label>
+                                <input type="tel" id="userPhone" placeholder="Enter 10-digit mobile number" maxlength="10" required>
+                                <span class="error-text" id="phoneError"></span>
+                            </div>
+                            
+                            <button type="submit" class="start-chat-btn" id="startChatBtn">Chat</button>
+                        </form>
+                    </div>
+                </div>
+        
+                <!-- Chat Interface (hidden initially) -->
+                <div class="chat-interface" id="chatInterface" style="display: none;">
+                    <div class="chat-header">
+                        <h1>🎓 Entri Career Guidance</h1>
+                        <p>Let's help you discover the right path!</p>
                     </div>
                     
-                    <button type="submit" class="start-chat-btn" id="startChatBtn">Chat</button>
-                </form>
-            </div>
-        </div>
-
-        <!-- Chat Interface (hidden initially) -->
-        <div class="chat-interface" id="chatInterface" style="display: none;">
-            <div class="chat-header">
-                <h1>🎓 Entri Career Guidance</h1>
-                <p>Let's help you discover the right path!</p>
-            </div>
-            
-            <!-- Conversation Starters Screen (shown first) -->
-            <div class="conversation-starters" id="conversationStarters" style="display: none;">
-                <div class="starters-container">
-                    <div class="bot-message-intro">
-                        <p style="font-size: 14px; line-height: 1.6; color: #212121; margin-bottom: 8px;">
-                            👋 Hi there! I'm your career counsellor, and I'll guide you step-by-step to find a course that truly fits your goals and current situation.
-                        </p>
-                        <p style="font-size: 14px; line-height: 1.6; color: #212121;">
-                            To get started, may I ask: What is your main goal to achieve right now?
-                        </p>
+                    <!-- Conversation Starters Screen (shown first) -->
+                    <div class="conversation-starters" id="conversationStarters" style="display: none;">
+                        <div class="starters-container">
+                            <div class="bot-message-intro">
+                                <p style="font-size: 14px; line-height: 1.6; color: #212121; margin-bottom: 8px;">
+                                    👋 Hi there! I'm your career counsellor, and I'll guide you step-by-step to find a course that truly fits your goals and current situation.
+                                </p>
+                                <p style="font-size: 14px; line-height: 1.6; color: #212121;">
+                                    To get started, may I ask: What is your main goal to achieve right now?
+                                </p>
+                            </div>
+                            
+                            <div class="chips-wrapper" id="starterChips">
+                                <button class="starter-chip" data-goal="Get a new job">Get a new job</button>
+                                <button class="starter-chip" data-goal="Switch my career">Switch my career</button>
+                                <button class="starter-chip" data-goal="Prepare for government exams">Prepare for government exams</button>
+                                <button class="starter-chip" data-goal="Upskill myself for better opportunities">Upskill myself for better opportunities</button>
+                                <button class="starter-chip" data-goal="Learn skills to start a business">Learn skills to start a business</button>
+                            </div>
+                            
+                            <div style="margin-top: 20px; text-align: center; color: #666; font-size: 13px;">
+                                Or type your own goal below:
+                            </div>
+                            
+                            <div style="margin-top: 12px; padding: 0 20px;">
+                                <div class="input-wrapper">
+                                    <input type="text" id="customGoalInput" placeholder="Type your goal..." style="flex: 1; padding: 12px 16px; border: 1px solid #e8e8e8; border-radius: 24px; font-size: 15px; outline: none; font-family: inherit;">
+                                    <button id="customGoalBtn" style="padding: 12px 24px; background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%); color: white; border: none; border-radius: 24px; cursor: pointer; font-size: 15px; font-weight: 600;">Send</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
-                    <div class="chips-wrapper" id="starterChips">
-                        <button class="starter-chip" data-goal="Get a new job">Get a new job</button>
-                        <button class="starter-chip" data-goal="Switch my career">Switch my career</button>
-                        <button class="starter-chip" data-goal="Prepare for government exams">Prepare for government exams</button>
-                        <button class="starter-chip" data-goal="Upskill myself for better opportunities">Upskill myself for better opportunities</button>
-                        <button class="starter-chip" data-goal="Learn skills to start a business">Learn skills to start a business</button>
+                    <!-- Regular Chat Messages -->
+                    <div class="chat-messages" id="chatMessages" style="display: none;"></div>
+                    
+                    <div class="chat-input-area" id="chatInputArea" style="display: none;">
+                        <div class="input-wrapper">
+                            <input type="text" id="userInput" placeholder="Type your message..." autocomplete="off">
+                            <button id="sendBtn">Send</button>
+                        </div>
                     </div>
                 </div>
             </div>
-            
-            <!-- Regular Chat Messages -->
-            <div class="chat-messages" id="chatMessages" style="display: none;"></div>
-            
-            <div class="chat-input-area" id="chatInputArea" style="display: none;">
-                <div class="input-wrapper">
-                    <input type="text" id="userInput" placeholder="Type your message..." autocomplete="off">
-                    <button id="sendBtn">Send</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        const chatMessages = document.getElementById('chatMessages');
-        const userInput = document.getElementById('userInput');
-        const sendBtn = document.getElementById('sendBtn');
-        const preChatForm = document.getElementById('preChatForm');
-        const chatInterface = document.getElementById('chatInterface');
-        const conversationStarters = document.getElementById('conversationStarters');
-        const chatInputArea = document.getElementById('chatInputArea');
-        const registrationForm = document.getElementById('registrationForm');
-        const userPhoneInput = document.getElementById('userPhone');
-        const phoneError = document.getElementById('phoneError');
-        const startChatBtn = document.getElementById('startChatBtn');
-
-        // REPLACE WITH YOUR DEPLOYED APPS SCRIPT WEB APP URL
-        const APPS_SCRIPT_URL = 'YOUR_APPS_SCRIPT_URL_HERE';
-
-        let conversationHistory = [];
-        let hasStarted = false;
-        let sessionId = Date.now() + '-' + Math.random().toString(36).substr(2, 9);
-        let lastBotMessage = '';
-        let userPhone = '';
-
-        // Phone number validation (Indian format)
-        function validatePhone(phone) {
-            const cleaned = phone.replace(/\D/g, '');
-            
-            if (cleaned.length !== 10) {
-                return { valid: false, message: 'Phone number must be 10 digits' };
-            }
-            
-            if (!['6', '7', '8', '9'].includes(cleaned[0])) {
-                return { valid: false, message: 'Phone number must start with 6, 7, 8, or 9' };
-            }
-            
-            return { valid: true, cleaned: cleaned };
-        }
-
-        // Real-time phone validation
-        userPhoneInput.addEventListener('input', (e) => {
-            const value = e.target.value;
-            const cleaned = value.replace(/\D/g, '');
-            
-            if (cleaned !== value) {
-                e.target.value = cleaned;
-            }
-            
-            if (phoneError.textContent) {
-                phoneError.textContent = '';
-                userPhoneInput.classList.remove('error');
-            }
-        });
-
-        // Handle registration form submission
-        registrationForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const phone = userPhoneInput.value.trim();
-            
-            // Validate phone
-            const phoneValidation = validatePhone(phone);
-            if (!phoneValidation.valid) {
-                phoneError.textContent = phoneValidation.message;
-                userPhoneInput.classList.add('error');
-                return;
-            }
-            
-            // Store user data
-            userPhone = phoneValidation.cleaned;
-            
-            // Save registration to sheet immediately
-            startChatBtn.disabled = true;
-            startChatBtn.textContent = 'Starting...';
-            
-            try {
-                await saveRegistration();
-                
-                // Show chat interface with conversation starters
-                preChatForm.style.display = 'none';
-                chatInterface.style.display = 'flex';
-                conversationStarters.style.display = 'block';
-                
+        
+            <script>
+                const chatMessages = document.getElementById('chatMessages');
+                const userInput = document.getElementById('userInput');
+                const sendBtn = document.getElementById('sendBtn');
+                const preChatForm = document.getElementById('preChatForm');
+                const chatInterface = document.getElementById('chatInterface');
+                const conversationStarters = document.getElementById('conversationStarters');
+                const chatInputArea = document.getElementById('chatInputArea');
+                const registrationForm = document.getElementById('registrationForm');
+                const userPhoneInput = document.getElementById('userPhone');
+                const phoneError = document.getElementById('phoneError');
+                const startChatBtn = document.getElementById('startChatBtn');
+        
+                // REPLACE WITH YOUR DEPLOYED APPS SCRIPT WEB APP URL
+                const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw75UhER_ErlnCHPIX00ER3X2-2jYgHHUZAKDyZjgHadZPgYTSvKT64EiMfHtRUyCKH/exec';
+        
+                let conversationHistory = [];
+                let hasStarted = false;
+                let sessionId = Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+                let lastBotMessage = '';
+                let userPhone = '';
+        
+                // Phone number validation (Indian format)
+                function validatePhone(phone) {
+                    const cleaned = phone.replace(/\D/g, '');
+                    
+                    if (cleaned.length !== 10) {
+                        return { valid: false, message: 'Phone number must be 10 digits' };
+                    }
+                    
+                    if (!['6', '7', '8', '9'].includes(cleaned[0])) {
+                        return { valid: false, message: 'Phone number must start with 6, 7, 8, or 9' };
+                    }
+                    
+                    return { valid: true, cleaned: cleaned };
+                }
+        
+                // Real-time phone validation
+                userPhoneInput.addEventListener('input', (e) => {
+                    const value = e.target.value;
+                    const cleaned = value.replace(/\D/g, '');
+                    
+                    if (cleaned !== value) {
+                        e.target.value = cleaned;
+                    }
+                    
+                    if (phoneError.textContent) {
+                        phoneError.textContent = '';
+                        userPhoneInput.classList.remove('error');
+                    }
+                });
+        
+                // Handle registration form submission
+                registrationForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    
+                    const phone = userPhoneInput.value.trim();
+                    
+                    // Validate phone
+                    const phoneValidation = validatePhone(phone);
+                    if (!phoneValidation.valid) {
+                        phoneError.textContent = phoneValidation.message;
+                        userPhoneInput.classList.add('error');
+                        return;
+                    }
+                    
+                    // Store user data
+                    userPhone = phoneValidation.cleaned;
+                    
+                    // Save registration to sheet immediately
+                    startChatBtn.disabled = true;
+                    startChatBtn.textContent = 'Starting...';
+                    
+                    try {
+                        await saveRegistration();
+                        
+                        // Show chat interface with conversation starters
+                        preChatForm.style.display = 'none';
+                        chatInterface.style.display = 'flex';
+                        conversationStarters.style.display = 'block';
+                        
+                        // Setup conversation starter chips
+                        setupStarterChips();
+                        
+                    } catch (error) {
+                        console.error('Registration error:', error);
+                        phoneError.textContent = 'Something went wrong. Please try again.';
+                        startChatBtn.disabled = false;
+                        startChatBtn.textContent = 'Chat';
+                    }
+                });
+        
+                // Save registration to Google Sheets
+                async function saveRegistration() {
+                    try {
+                        console.log('📤 Registering phone:', userPhone);
+                        
+                        const response = await fetch(APPS_SCRIPT_URL, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'text/plain',
+                            },
+                            body: JSON.stringify({
+                                action: 'register',
+                                sessionId: sessionId,
+                                phone: userPhone
+                            })
+                        });
+        
+                        const data = await response.json();
+                        
+                        if (!data.success) {
+                            throw new Error(data.error || 'Registration failed');
+                        }
+                        
+                        console.log('✅ User registered:', userPhone);
+                        
+                    } catch (error) {
+                        console.error('Save registration error:', error);
+                        throw error;
+                    }
+                }
+        
                 // Setup conversation starter chips
-                setupStarterChips();
-                
-            } catch (error) {
-                console.error('Registration error:', error);
-                phoneError.textContent = 'Something went wrong. Please try again.';
-                startChatBtn.disabled = false;
-                startChatBtn.textContent = 'Chat';
-            }
-        });
-
-        // Save registration to Google Sheets
-        async function saveRegistration() {
-            try {
-                console.log('📤 Registering phone:', userPhone);
-                
-                const response = await fetch(APPS_SCRIPT_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'text/plain',
-                    },
-                    body: JSON.stringify({
-                        action: 'register',
-                        sessionId: sessionId,
-                        phone: userPhone
-                    })
-                });
-
-                const data = await response.json();
-                
-                if (!data.success) {
-                    throw new Error(data.error || 'Registration failed');
-                }
-                
-                console.log('✅ User registered:', userPhone);
-                
-            } catch (error) {
-                console.error('Save registration error:', error);
-                throw error;
-            }
-        }
-
-        // Setup conversation starter chips
-        function setupStarterChips() {
-            const chips = document.querySelectorAll('.starter-chip');
-            chips.forEach(chip => {
-                chip.addEventListener('click', async () => {
-                    const goal = chip.getAttribute('data-goal');
-                    await handleStarterSelection(goal);
-                });
-            });
-        }
-
-        // Handle starter chip selection
-        async function handleStarterSelection(goal) {
-            console.log('🎯 User selected goal:', goal);
-            
-            // Hide conversation starters
-            conversationStarters.style.display = 'none';
-            
-            // Show chat messages and input
-            chatMessages.style.display = 'block';
-            chatInputArea.style.display = 'block';
-            
-            hasStarted = true;
-            
-            // Add user's selection as a message
-            addMessage(goal, false);
-            
-            // Send to backend via startWithGoal endpoint
-            showTypingIndicator();
-            
-            try {
-                console.log('📤 Sending goal selection to backend');
-                
-                const response = await fetch(APPS_SCRIPT_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'text/plain',
-                    },
-                    body: JSON.stringify({
-                        action: 'startWithGoal',
-                        sessionId: sessionId,
-                        goal: goal
-                    })
-                });
-
-                const data = await response.json();
-                
-                removeTypingIndicator();
-                
-                if (data.success) {
-                    // Add bot's response (should ask for name)
-                    addMessage(data.message, true);
-                    
-                    // Initialize conversation history
-                    conversationHistory = [
-                        { role: 'user', content: goal },
-                        { role: 'assistant', content: data.message }
-                    ];
-                } else {
-                    showError(data.error || 'Failed to start conversation');
-                }
-                
-            } catch (error) {
-                console.error('Goal selection error:', error);
-                removeTypingIndicator();
-                showError('Connection failed. Please try again.');
-            }
-            
-            userInput.disabled = false;
-            sendBtn.disabled = false;
-            userInput.focus();
-        }
-
-        function addMessage(text, isBot = true) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${isBot ? 'bot' : 'user'}`;
-            
-            const contentDiv = document.createElement('div');
-            contentDiv.className = 'message-content';
-            
-            if (isBot) {
-                contentDiv.innerHTML = parseMessageWithFormatting(text);
-                lastBotMessage = text.toLowerCase();
-            } else {
-                contentDiv.textContent = text;
-            }
-            
-            messageDiv.appendChild(contentDiv);
-            chatMessages.appendChild(messageDiv);
-            
-            if (isBot) {
-                showOptionsIfNeeded(text);
-            }
-            
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-
-        function showOptionsIfNeeded(botMessage) {
-            const lowerMsg = botMessage.toLowerCase();
-            let options = null;
-            
-            const existingChips = document.getElementById('option-chips-container');
-            if (existingChips) {
-                existingChips.remove();
-            }
-            
-            // Educational Qualification chips
-            if ((lowerMsg.includes('educational qualification') || 
-                 lowerMsg.includes('highest qualification') ||
-                 lowerMsg.includes('highest educational')) &&
-                !lowerMsg.includes('describes you') &&
-                !lowerMsg.includes('right now')) {
-                options = ['10th', '12th / Diploma', "Bachelor's", "Master's"];
-            }
-            // Current Status chips
-            else if ((lowerMsg.includes('describes you') && lowerMsg.includes('right now')) ||
-                     (lowerMsg.includes('current status') && lowerMsg.includes('right now'))) {
-                options = ['Student', 'Fresher', 'Working Professional', 'Job Switching'];
-            }
-            
-            if (options) {
-                setTimeout(() => {
-                    showOptionChips(options);
-                    userInput.disabled = true;
-                    sendBtn.disabled = true;
-                }, 100);
-            } else {
-                userInput.disabled = false;
-                sendBtn.disabled = false;
-            }
-        }
-
-        function showOptionChips(options) {
-            const chipsContainer = document.createElement('div');
-            chipsContainer.className = 'message bot';
-            chipsContainer.id = 'option-chips-container';
-            
-            const chipsWrapper = document.createElement('div');
-            chipsWrapper.className = 'option-chips';
-            
-            options.forEach(option => {
-                const chip = document.createElement('button');
-                chip.className = 'option-chip';
-                chip.textContent = option;
-                chip.onclick = () => handleOptionClick(option);
-                chipsWrapper.appendChild(chip);
-            });
-            
-            chipsContainer.appendChild(chipsWrapper);
-            chatMessages.appendChild(chipsContainer);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-
-        async function handleOptionClick(option) {
-            const chipsContainer = document.getElementById('option-chips-container');
-            if (chipsContainer) chipsContainer.remove();
-            
-            const selectionDiv = document.createElement('div');
-            selectionDiv.className = 'message user';
-            selectionDiv.innerHTML = `<div class="message-content">${option}</div>`;
-            chatMessages.appendChild(selectionDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-            
-            userInput.disabled = true;
-            sendBtn.disabled = true;
-            
-            showTypingIndicator();
-            const response = await sendMessage(option);
-            removeTypingIndicator();
-            
-            if (response) {
-                addMessage(response, true);
-            }
-            
-            setTimeout(() => {
-                const hasChips = document.getElementById('option-chips-container');
-                if (!hasChips) {
-                    userInput.disabled = false;
-                    sendBtn.disabled = false;
-                    userInput.focus();
-                }
-            }, 100);
-        }
-
-        function parseMessageWithFormatting(text) {
-            text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            text = text.replace(/\n/g, '<br>');
-            
-            const categoryBadges = {
-                '🔧 Technical Builder': '#3B82F6',
-                '📱 Creative Communicator': '#8B5CF6',
-                '🎨 Visual Creator': '#EC4899',
-                '💰 Numbers Person': '#10B981',
-                '🏛️ Stability Seeker': '#F59E0B',
-                '👨‍🏫 Educator': '#06B6D4',
-                '🗣️ Communicator': '#6366F1',
-                '⚕️ Healthcare Professional': '#EF4444',
-                '⚙️ Engineering Professional': '#14B8A6',
-                '💼 Business Professional': '#8B5CF6'
-            };
-            
-            Object.keys(categoryBadges).forEach(badge => {
-                const color = categoryBadges[badge];
-                const badgeHtml = `<span style="display: inline-block; background: ${color}; color: white; padding: 4px 12px; border-radius: 12px; font-size: 13px; font-weight: 600; margin: 4px 0;">${badge}</span>`;
-                text = text.replace(badge, badgeHtml);
-            });
-            
-            if (text.toLowerCase().includes('recommend') || 
-                text.toLowerCase().includes('course') ||
-                text.toLowerCase().includes('perfect for you')) {
-                
-                text = text.replace(/PRIMARY RECOMMENDATION:/g, '<div style="margin: 12px 0; padding: 8px; background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%); color: white; border-radius: 8px; font-weight: 600;">🎯 PRIMARY RECOMMENDATION</div>');
-                text = text.replace(/ALTERNATIVE OPTIONS:/g, '<div style="margin: 12px 0; padding: 8px; background: #F3F4F6; border-radius: 8px; font-weight: 600; color: #374151;">💡 ALTERNATIVE OPTIONS</div>');
-                
-                const coursePattern = /(?:^|\n)(?:\d+\.\s+)?\*\*([^*]+)\*\*\s*\n([^\n]+(?:\n(?!\*\*)[^\n]+)*)/gm;
-                text = text.replace(coursePattern, (match, title, description) => {
-                    return `<div class="course-recommendation">
-                        <h3>${title.trim()}</h3>
-                        <p>${description.trim()}</p>
-                    </div>`;
-                });
-            }
-            
-            return text;
-        }
-
-        function showTypingIndicator() {
-            const typingDiv = document.createElement('div');
-            typingDiv.className = 'message bot';
-            typingDiv.id = 'typing-indicator';
-            typingDiv.innerHTML = `
-                <div class="typing-indicator">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </div>
-            `;
-            chatMessages.appendChild(typingDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-
-        function removeTypingIndicator() {
-            const typing = document.getElementById('typing-indicator');
-            if (typing) typing.remove();
-        }
-
-        function showError(message) {
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'error-message';
-            errorDiv.innerHTML = `<strong>Error:</strong> ${message}`;
-            chatMessages.appendChild(errorDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-
-        async function sendMessage(userMessage) {
-            try {
-                conversationHistory.push({
-                    role: 'user',
-                    content: userMessage
-                });
-
-                const response = await fetch(APPS_SCRIPT_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'text/plain',
-                    },
-                    body: JSON.stringify({
-                        action: 'chat',
-                        sessionId: sessionId,
-                        conversationHistory: conversationHistory
-                    })
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`Server returned ${response.status}`);
-                }
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    conversationHistory.push({
-                        role: 'assistant',
-                        content: data.message
+                function setupStarterChips() {
+                    const chips = document.querySelectorAll('.starter-chip');
+                    chips.forEach(chip => {
+                        chip.addEventListener('click', async () => {
+                            const goal = chip.getAttribute('data-goal');
+                            await handleStarterSelection(goal);
+                        });
                     });
                     
-                    return data.message;
-                } else {
-                    console.error('❌ API Error:', data.error);
-                    showError(data.error || 'Unknown error occurred');
-                    return null;
+                    // Setup custom goal input
+                    const customGoalInput = document.getElementById('customGoalInput');
+                    const customGoalBtn = document.getElementById('customGoalBtn');
+                    
+                    customGoalBtn.addEventListener('click', async () => {
+                        const customGoal = customGoalInput.value.trim();
+                        if (customGoal) {
+                            await handleStarterSelection(customGoal);
+                        }
+                    });
+                    
+                    customGoalInput.addEventListener('keypress', async (e) => {
+                        if (e.key === 'Enter') {
+                            const customGoal = customGoalInput.value.trim();
+                            if (customGoal) {
+                                await handleStarterSelection(customGoal);
+                            }
+                        }
+                    });
                 }
-            } catch (error) {
-                console.error('❌ Error:', error);
-                showError(`Connection failed: ${error.message}`);
-                return null;
-            }
-        }
-
-        async function handleSendMessage() {
-            const message = userInput.value.trim();
-            if (!message) return;
-
-            addMessage(message, false);
-            userInput.value = '';
-            userInput.disabled = true;
-            sendBtn.disabled = true;
-
-            showTypingIndicator();
-            const response = await sendMessage(message);
-            removeTypingIndicator();
-
-            if (response) {
-                addMessage(response, true);
-            }
-
-            setTimeout(() => {
-                const hasChips = document.getElementById('option-chips-container');
-                if (!hasChips) {
+        
+                // Handle starter chip selection
+                async function handleStarterSelection(goal) {
+                    console.log('🎯 User selected goal:', goal);
+                    
+                    // Hide conversation starters
+                    conversationStarters.style.display = 'none';
+                    
+                    // Show chat messages and input
+                    chatMessages.style.display = 'block';
+                    chatInputArea.style.display = 'block';
+                    
+                    hasStarted = true;
+                    
+                    // Add user's selection as a message
+                    addMessage(goal, false);
+                    
+                    // Send to backend via startWithGoal endpoint
+                    showTypingIndicator();
+                    
+                    try {
+                        console.log('📤 Sending goal selection to backend');
+                        
+                        const response = await fetch(APPS_SCRIPT_URL, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'text/plain',
+                            },
+                            body: JSON.stringify({
+                                action: 'startWithGoal',
+                                sessionId: sessionId,
+                                goal: goal
+                            })
+                        });
+        
+                        const data = await response.json();
+                        
+                        removeTypingIndicator();
+                        
+                        if (data.success) {
+                            // Add bot's response (should ask for name)
+                            addMessage(data.message, true);
+                            
+                            // Initialize conversation history
+                            conversationHistory = [
+                                { role: 'user', content: goal },
+                                { role: 'assistant', content: data.message }
+                            ];
+                        } else {
+                            showError(data.error || 'Failed to start conversation');
+                        }
+                        
+                    } catch (error) {
+                        console.error('Goal selection error:', error);
+                        removeTypingIndicator();
+                        showError('Connection failed. Please try again.');
+                    }
+                    
                     userInput.disabled = false;
                     sendBtn.disabled = false;
                     userInput.focus();
                 }
-            }, 100);
-        }
-
-        sendBtn.addEventListener('click', handleSendMessage);
         
-        userInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSendMessage();
-            }
-        });
-
-        console.log('🚀 Chat initialized with session ID:', sessionId);
-        console.log('⚠️ REMEMBER TO UPDATE APPS_SCRIPT_URL AFTER DEPLOYMENT!');
-    </script>
-</body>
-</html>
+                function addMessage(text, isBot = true) {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = `message ${isBot ? 'bot' : 'user'}`;
+                    
+                    const contentDiv = document.createElement('div');
+                    contentDiv.className = 'message-content';
+                    
+                    if (isBot) {
+                        contentDiv.innerHTML = parseMessageWithFormatting(text);
+                        lastBotMessage = text.toLowerCase();
+                    } else {
+                        contentDiv.textContent = text;
+                    }
+                    
+                    messageDiv.appendChild(contentDiv);
+                    chatMessages.appendChild(messageDiv);
+                    
+                    if (isBot) {
+                        showOptionsIfNeeded(text);
+                    }
+                    
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+        
+                function showOptionsIfNeeded(botMessage) {
+                    const lowerMsg = botMessage.toLowerCase();
+                    let options = null;
+                    
+                    const existingChips = document.getElementById('option-chips-container');
+                    if (existingChips) {
+                        existingChips.remove();
+                    }
+                    
+                    // Educational Qualification chips
+                    if ((lowerMsg.includes('educational qualification') || 
+                         lowerMsg.includes('highest qualification') ||
+                         lowerMsg.includes('highest educational')) &&
+                        !lowerMsg.includes('describes you') &&
+                        !lowerMsg.includes('right now')) {
+                        options = ['10th', '12th / Diploma', "Bachelor's", "Master's"];
+                    }
+                    // Current Status chips
+                    else if ((lowerMsg.includes('describes you') && lowerMsg.includes('right now')) ||
+                             (lowerMsg.includes('current status') && lowerMsg.includes('right now'))) {
+                        options = ['Student', 'Fresher', 'Working Professional', 'Job Switching'];
+                    }
+                    
+                    if (options) {
+                        setTimeout(() => {
+                            showOptionChips(options);
+                            userInput.disabled = true;
+                            sendBtn.disabled = true;
+                        }, 100);
+                    } else {
+                        userInput.disabled = false;
+                        sendBtn.disabled = false;
+                    }
+                }
+        
+                function showOptionChips(options) {
+                    const chipsContainer = document.createElement('div');
+                    chipsContainer.className = 'message bot';
+                    chipsContainer.id = 'option-chips-container';
+                    
+                    const chipsWrapper = document.createElement('div');
+                    chipsWrapper.className = 'option-chips';
+                    
+                    options.forEach(option => {
+                        const chip = document.createElement('button');
+                        chip.className = 'option-chip';
+                        chip.textContent = option;
+                        chip.onclick = () => handleOptionClick(option);
+                        chipsWrapper.appendChild(chip);
+                    });
+                    
+                    chipsContainer.appendChild(chipsWrapper);
+                    chatMessages.appendChild(chipsContainer);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+        
+                async function handleOptionClick(option) {
+                    const chipsContainer = document.getElementById('option-chips-container');
+                    if (chipsContainer) chipsContainer.remove();
+                    
+                    const selectionDiv = document.createElement('div');
+                    selectionDiv.className = 'message user';
+                    selectionDiv.innerHTML = `<div class="message-content">${option}</div>`;
+                    chatMessages.appendChild(selectionDiv);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                    
+                    userInput.disabled = true;
+                    sendBtn.disabled = true;
+                    
+                    showTypingIndicator();
+                    const response = await sendMessage(option);
+                    removeTypingIndicator();
+                    
+                    if (response) {
+                        addMessage(response, true);
+                    }
+                    
+                    setTimeout(() => {
+                        const hasChips = document.getElementById('option-chips-container');
+                        if (!hasChips) {
+                            userInput.disabled = false;
+                            sendBtn.disabled = false;
+                            userInput.focus();
+                        }
+                    }, 100);
+                }
+        
+                function parseMessageWithFormatting(text) {
+                    text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                    text = text.replace(/\n/g, '<br>');
+                    
+                    const categoryBadges = {
+                        '🔧 Technical Builder': '#3B82F6',
+                        '📱 Creative Communicator': '#8B5CF6',
+                        '🎨 Visual Creator': '#EC4899',
+                        '💰 Numbers Person': '#10B981',
+                        '🏛️ Stability Seeker': '#F59E0B',
+                        '👨‍🏫 Educator': '#06B6D4',
+                        '🗣️ Communicator': '#6366F1',
+                        '⚕️ Healthcare Professional': '#EF4444',
+                        '⚙️ Engineering Professional': '#14B8A6',
+                        '💼 Business Professional': '#8B5CF6'
+                    };
+                    
+                    Object.keys(categoryBadges).forEach(badge => {
+                        const color = categoryBadges[badge];
+                        const badgeHtml = `<span style="display: inline-block; background: ${color}; color: white; padding: 4px 12px; border-radius: 12px; font-size: 13px; font-weight: 600; margin: 4px 0;">${badge}</span>`;
+                        text = text.replace(badge, badgeHtml);
+                    });
+                    
+                    if (text.toLowerCase().includes('recommend') || 
+                        text.toLowerCase().includes('course') ||
+                        text.toLowerCase().includes('perfect for you')) {
+                        
+                        text = text.replace(/PRIMARY RECOMMENDATION:/g, '<div style="margin: 12px 0; padding: 8px; background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%); color: white; border-radius: 8px; font-weight: 600;">🎯 PRIMARY RECOMMENDATION</div>');
+                        text = text.replace(/ALTERNATIVE OPTIONS:/g, '<div style="margin: 12px 0; padding: 8px; background: #F3F4F6; border-radius: 8px; font-weight: 600; color: #374151;">💡 ALTERNATIVE OPTIONS</div>');
+                        
+                        const coursePattern = /(?:^|\n)(?:\d+\.\s+)?\*\*([^*]+)\*\*\s*\n([^\n]+(?:\n(?!\*\*)[^\n]+)*)/gm;
+                        text = text.replace(coursePattern, (match, title, description) => {
+                            return `<div class="course-recommendation">
+                                <h3>${title.trim()}</h3>
+                                <p>${description.trim()}</p>
+                            </div>`;
+                        });
+                    }
+                    
+                    return text;
+                }
+        
+                function showTypingIndicator() {
+                    const typingDiv = document.createElement('div');
+                    typingDiv.className = 'message bot';
+                    typingDiv.id = 'typing-indicator';
+                    typingDiv.innerHTML = `
+                        <div class="typing-indicator">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    `;
+                    chatMessages.appendChild(typingDiv);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+        
+                function removeTypingIndicator() {
+                    const typing = document.getElementById('typing-indicator');
+                    if (typing) typing.remove();
+                }
+        
+                function showError(message) {
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'error-message';
+                    errorDiv.innerHTML = `<strong>Error:</strong> ${message}`;
+                    chatMessages.appendChild(errorDiv);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+        
+                async function sendMessage(userMessage) {
+                    try {
+                        conversationHistory.push({
+                            role: 'user',
+                            content: userMessage
+                        });
+        
+                        const response = await fetch(APPS_SCRIPT_URL, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'text/plain',
+                            },
+                            body: JSON.stringify({
+                                action: 'chat',
+                                sessionId: sessionId,
+                                conversationHistory: conversationHistory
+                            })
+                        });
+                        
+                        if (!response.ok) {
+                            throw new Error(`Server returned ${response.status}`);
+                        }
+                        
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            conversationHistory.push({
+                                role: 'assistant',
+                                content: data.message
+                            });
+                            
+                            return data.message;
+                        } else {
+                            console.error('❌ API Error:', data.error);
+                            showError(data.error || 'Unknown error occurred');
+                            return null;
+                        }
+                    } catch (error) {
+                        console.error('❌ Error:', error);
+                        showError(`Connection failed: ${error.message}`);
+                        return null;
+                    }
+                }
+        
+                async function handleSendMessage() {
+                    const message = userInput.value.trim();
+                    if (!message) return;
+        
+                    addMessage(message, false);
+                    userInput.value = '';
+                    userInput.disabled = true;
+                    sendBtn.disabled = true;
+        
+                    showTypingIndicator();
+                    const response = await sendMessage(message);
+                    removeTypingIndicator();
+        
+                    if (response) {
+                        addMessage(response, true);
+                    }
+        
+                    setTimeout(() => {
+                        const hasChips = document.getElementById('option-chips-container');
+                        if (!hasChips) {
+                            userInput.disabled = false;
+                            sendBtn.disabled = false;
+                            userInput.focus();
+                        }
+                    }, 100);
+                }
+        
+                sendBtn.addEventListener('click', handleSendMessage);
+                
+                userInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSendMessage();
+                    }
+                });
+        
+                console.log('🚀 Chat initialized with session ID:', sessionId);
+                console.log('⚠️ REMEMBER TO UPDATE APPS_SCRIPT_URL AFTER DEPLOYMENT!');
+            </script>
+        </body>
+        </html>
