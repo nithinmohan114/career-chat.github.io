@@ -21,17 +21,16 @@
             margin: 0;
             padding: 0;
             height: 100vh;
-            height: 100dvh; /* Dynamic viewport height for mobile */
+            height: 100dvh;
             overflow: hidden;
             position: fixed;
             width: 100%;
         }
 
-        /* Chat Container - Full viewport height */
         .chat-container {
             width: 100%;
             height: 100vh;
-            height: 100dvh; /* Dynamic viewport height for mobile */
+            height: 100dvh;
             background: #ffffff;
             display: flex;
             flex-direction: column;
@@ -41,7 +40,7 @@
             background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
             color: white;
             padding: 20px 24px;
-            padding-top: max(20px, env(safe-area-inset-top)); /* iOS notch safe area */
+            padding-top: max(20px, env(safe-area-inset-top));
             text-align: center;
             position: sticky;
             top: 0;
@@ -65,10 +64,10 @@
             overflow-y: auto;
             overflow-x: hidden;
             padding: 20px;
-            padding-bottom: 80px; /* Extra space for better scrolling on mobile */
+            padding-bottom: 80px;
             background: #f8f9fa;
             min-height: 0;
-            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+            -webkit-overflow-scrolling: touch;
         }
 
         .chat-messages::-webkit-scrollbar {
@@ -133,7 +132,7 @@
 
         .chat-input-area {
             padding: 16px 20px;
-            padding-bottom: max(16px, env(safe-area-inset-bottom)); /* iOS safe area */
+            padding-bottom: max(16px, env(safe-area-inset-bottom));
             background: white;
             border-top: 1px solid #e8e8e8;
             flex-shrink: 0;
@@ -242,24 +241,6 @@
             color: #555;
             font-size: 14px;
             line-height: 1.5;
-        }
-
-        .welcome-message {
-            text-align: center;
-            padding: 40px 20px;
-            color: #666;
-        }
-
-        .welcome-message h2 {
-            font-size: 20px;
-            margin-bottom: 12px;
-            color: #1E40AF;
-            font-weight: 600;
-        }
-
-        .welcome-message p {
-            font-size: 15px;
-            line-height: 1.6;
         }
 
         /* Pre-Chat Registration Form */
@@ -381,6 +362,56 @@
             height: 100vh;
         }
 
+        /* Conversation Starter Chips */
+        .conversation-starters {
+            padding: 20px;
+            background: #f8f9fa;
+        }
+
+        .starters-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .bot-message-intro {
+            background: white;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border-bottom-left-radius: 4px;
+            margin-bottom: 16px;
+            border: 1px solid #e8e8e8;
+        }
+
+        .chips-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 11px;
+            margin-top: 12px;
+        }
+
+        .starter-chip {
+            background: white;
+            border: 1px solid #F0F0F0;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            color: #212121;
+            transition: all 0.2s;
+            font-family: inherit;
+            letter-spacing: 0.25px;
+        }
+
+        .starter-chip:hover {
+            background: #f8f9fa;
+            border-color: #3B82F6;
+            transform: translateY(-2px);
+        }
+
+        .starter-chip:active {
+            transform: translateY(0);
+        }
+
         .option-chips {
             display: flex;
             flex-wrap: wrap;
@@ -422,47 +453,6 @@
             border-left: 3px solid #c33;
         }
 
-        /* Autocomplete suggestions */
-        .suggestions-container {
-            position: absolute;
-            bottom: 100%;
-            left: 0;
-            right: 0;
-            background: white;
-            border: 1px solid #e8e8e8;
-            border-radius: 12px 12px 0 0;
-            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
-            max-height: 200px;
-            overflow-y: auto;
-            display: none;
-            z-index: 1000;
-        }
-
-        .suggestions-container.active {
-            display: block;
-        }
-
-        .suggestion-item {
-            padding: 12px 20px;
-            cursor: pointer;
-            border-bottom: 1px solid #f0f0f0;
-            transition: background 0.2s;
-            font-size: 15px;
-        }
-
-        .suggestion-item:hover {
-            background: #f8f9fa;
-        }
-
-        .suggestion-item:last-child {
-            border-bottom: none;
-        }
-
-        .suggestion-highlight {
-            color: #1E40AF;
-            font-weight: 600;
-        }
-
         @media (max-width: 768px) {
             .chat-header {
                 padding: 16px 20px;
@@ -498,21 +488,13 @@
             }
 
             #userInput {
-                font-size: 16px; /* Prevents zoom on iOS */
+                font-size: 16px;
                 padding: 10px 16px;
             }
 
             #sendBtn {
                 padding: 10px 20px;
                 font-size: 14px;
-            }
-
-            .welcome-message {
-                padding: 30px 20px;
-            }
-
-            .welcome-message h2 {
-                font-size: 18px;
             }
         }
     </style>
@@ -524,21 +506,16 @@
             <div class="pre-chat-content">
                 <img src="https://cloudfront.entri.app/entri-logo/Entri-logo-new-512x188.svg" alt="Entri" class="entri-logo">
                 <h2>Get Personalized Course Recommendations</h2>
-                <p>Tell us a bit about yourself to get started</p>
+                <p>Enter your phone number to get started</p>
                 
                 <form id="registrationForm" onsubmit="return false;">
-                    <div class="form-group">
-                        <label for="userName">Name *</label>
-                        <input type="text" id="userName" placeholder="Enter your name" required>
-                    </div>
-                    
                     <div class="form-group">
                         <label for="userPhone">Phone Number *</label>
                         <input type="tel" id="userPhone" placeholder="Enter 10-digit mobile number" maxlength="10" required>
                         <span class="error-text" id="phoneError"></span>
                     </div>
                     
-                    <button type="submit" class="start-chat-btn" id="startChatBtn">Let's Talk 💬</button>
+                    <button type="submit" class="start-chat-btn" id="startChatBtn">Chat</button>
                 </form>
             </div>
         </div>
@@ -546,20 +523,36 @@
         <!-- Chat Interface (hidden initially) -->
         <div class="chat-interface" id="chatInterface" style="display: none;">
             <div class="chat-header">
-                <h1>🎓 Find Your Perfect Course</h1>
+                <h1>🎓 Entri Career Guidance</h1>
                 <p>Let's help you discover the right path!</p>
             </div>
             
-            <div class="chat-messages" id="chatMessages">
-                <div class="welcome-message">
-                    <h2>Hey <span id="userNameDisplay"></span>! 👋</h2>
-                    <p>I'm here to help you explore courses that match your interests and goals.</p>
-                    <p style="margin-top: 12px; font-size: 14px;">Let's get started 😊</p>
+            <!-- Conversation Starters Screen (shown first) -->
+            <div class="conversation-starters" id="conversationStarters" style="display: none;">
+                <div class="starters-container">
+                    <div class="bot-message-intro">
+                        <p style="font-size: 14px; line-height: 1.6; color: #212121; margin-bottom: 8px;">
+                            👋 Hi there! I'm your career counsellor, and I'll guide you step-by-step to find a course that truly fits your goals and current situation.
+                        </p>
+                        <p style="font-size: 14px; line-height: 1.6; color: #212121;">
+                            To get started, may I ask: What is your main goal to achieve right now?
+                        </p>
+                    </div>
+                    
+                    <div class="chips-wrapper" id="starterChips">
+                        <button class="starter-chip" data-goal="Get a new job">Get a new job</button>
+                        <button class="starter-chip" data-goal="Switch my career">Switch my career</button>
+                        <button class="starter-chip" data-goal="Prepare for government exams">Prepare for government exams</button>
+                        <button class="starter-chip" data-goal="Upskill myself for better opportunities">Upskill myself for better opportunities</button>
+                        <button class="starter-chip" data-goal="Learn skills to start a business">Learn skills to start a business</button>
+                    </div>
                 </div>
             </div>
             
-            <div class="chat-input-area">
-                <div class="suggestions-container" id="suggestionsContainer"></div>
+            <!-- Regular Chat Messages -->
+            <div class="chat-messages" id="chatMessages" style="display: none;"></div>
+            
+            <div class="chat-input-area" id="chatInputArea" style="display: none;">
                 <div class="input-wrapper">
                     <input type="text" id="userInput" placeholder="Type your message..." autocomplete="off">
                     <button id="sendBtn">Send</button>
@@ -568,41 +561,36 @@
         </div>
     </div>
 
-    <!-- Remove Registration Button and Modal (not needed anymore) -->
-
     <script>
         const chatMessages = document.getElementById('chatMessages');
         const userInput = document.getElementById('userInput');
         const sendBtn = document.getElementById('sendBtn');
-        const suggestionsContainer = document.getElementById('suggestionsContainer');
         const preChatForm = document.getElementById('preChatForm');
         const chatInterface = document.getElementById('chatInterface');
+        const conversationStarters = document.getElementById('conversationStarters');
+        const chatInputArea = document.getElementById('chatInputArea');
         const registrationForm = document.getElementById('registrationForm');
-        const userNameInput = document.getElementById('userName');
         const userPhoneInput = document.getElementById('userPhone');
         const phoneError = document.getElementById('phoneError');
         const startChatBtn = document.getElementById('startChatBtn');
 
-        // REPLACE WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzkmABvXl367Yh2TQYUhvSt-TaULs5tXWL5ERIFutrAJUk8usrC2DEVtcOHfvQe03O-/exec';
+        // REPLACE WITH YOUR DEPLOYED APPS SCRIPT WEB APP URL
+        const APPS_SCRIPT_URL = 'YOUR_APPS_SCRIPT_URL_HERE';
 
         let conversationHistory = [];
         let hasStarted = false;
         let sessionId = Date.now() + '-' + Math.random().toString(36).substr(2, 9);
         let lastBotMessage = '';
-        let userName = '';
         let userPhone = '';
 
         // Phone number validation (Indian format)
         function validatePhone(phone) {
             const cleaned = phone.replace(/\D/g, '');
             
-            // Must be exactly 10 digits
             if (cleaned.length !== 10) {
                 return { valid: false, message: 'Phone number must be 10 digits' };
             }
             
-            // Must start with 6-9 (Indian mobile numbers)
             if (!['6', '7', '8', '9'].includes(cleaned[0])) {
                 return { valid: false, message: 'Phone number must start with 6, 7, 8, or 9' };
             }
@@ -615,12 +603,10 @@
             const value = e.target.value;
             const cleaned = value.replace(/\D/g, '');
             
-            // Only allow digits and limit to 10
             if (cleaned !== value) {
                 e.target.value = cleaned;
             }
             
-            // Clear error when typing
             if (phoneError.textContent) {
                 phoneError.textContent = '';
                 userPhoneInput.classList.remove('error');
@@ -631,14 +617,7 @@
         registrationForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const name = userNameInput.value.trim();
             const phone = userPhoneInput.value.trim();
-            
-            // Validate name
-            if (!name || name.length < 2) {
-                userNameInput.focus();
-                return;
-            }
             
             // Validate phone
             const phoneValidation = validatePhone(phone);
@@ -649,7 +628,6 @@
             }
             
             // Store user data
-            userName = name;
             userPhone = phoneValidation.cleaned;
             
             // Save registration to sheet immediately
@@ -659,33 +637,27 @@
             try {
                 await saveRegistration();
                 
-                // Show chat interface
+                // Show chat interface with conversation starters
                 preChatForm.style.display = 'none';
                 chatInterface.style.display = 'flex';
+                conversationStarters.style.display = 'block';
                 
-                // Update welcome message with user's name
-                document.getElementById('userNameDisplay').textContent = userName;
-                
-                // Auto-start conversation
-                setTimeout(() => {
-                    const welcomeMsg = chatMessages.querySelector('.welcome-message');
-                    if (welcomeMsg) welcomeMsg.remove();
-                    
-                    // Send automatic first message
-                    handleAutoStart();
-                }, 500);
+                // Setup conversation starter chips
+                setupStarterChips();
                 
             } catch (error) {
                 console.error('Registration error:', error);
                 phoneError.textContent = 'Something went wrong. Please try again.';
                 startChatBtn.disabled = false;
-                startChatBtn.textContent = "Let's Talk 💬";
+                startChatBtn.textContent = 'Chat';
             }
         });
 
-        // Save registration immediately to sheet
+        // Save registration to Google Sheets
         async function saveRegistration() {
             try {
+                console.log('📤 Registering phone:', userPhone);
+                
                 const response = await fetch(APPS_SCRIPT_URL, {
                     method: 'POST',
                     headers: {
@@ -694,7 +666,6 @@
                     body: JSON.stringify({
                         action: 'register',
                         sessionId: sessionId,
-                        name: userName,
                         phone: userPhone
                     })
                 });
@@ -705,7 +676,7 @@
                     throw new Error(data.error || 'Registration failed');
                 }
                 
-                console.log('✅ User registered:', userName, userPhone);
+                console.log('✅ User registered:', userPhone);
                 
             } catch (error) {
                 console.error('Save registration error:', error);
@@ -713,90 +684,78 @@
             }
         }
 
-        // Auto-start conversation with user info
-        async function handleAutoStart() {
-            hasStarted = true;
-            userInput.focus();
+        // Setup conversation starter chips
+        function setupStarterChips() {
+            const chips = document.querySelectorAll('.starter-chip');
+            chips.forEach(chip => {
+                chip.addEventListener('click', async () => {
+                    const goal = chip.getAttribute('data-goal');
+                    await handleStarterSelection(goal);
+                });
+            });
+        }
+
+        // Handle starter chip selection
+        async function handleStarterSelection(goal) {
+            console.log('🎯 User selected goal:', goal);
             
-            // Add initial bot message
+            // Hide conversation starters
+            conversationStarters.style.display = 'none';
+            
+            // Show chat messages and input
+            chatMessages.style.display = 'block';
+            chatInputArea.style.display = 'block';
+            
+            hasStarted = true;
+            
+            // Add user's selection as a message
+            addMessage(goal, false);
+            
+            // Send to backend via startWithGoal endpoint
             showTypingIndicator();
             
-            // Send user info to AI to start conversation
-            const introMessage = `Hi! My name is ${userName}.`;
-            const response = await sendMessage(introMessage);
-            
-            removeTypingIndicator();
-            
-            if (response) {
-                addMessage(response, true);
+            try {
+                console.log('📤 Sending goal selection to backend');
+                
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain',
+                    },
+                    body: JSON.stringify({
+                        action: 'startWithGoal',
+                        sessionId: sessionId,
+                        goal: goal
+                    })
+                });
+
+                const data = await response.json();
+                
+                removeTypingIndicator();
+                
+                if (data.success) {
+                    // Add bot's response (should ask for name)
+                    addMessage(data.message, true);
+                    
+                    // Initialize conversation history
+                    conversationHistory = [
+                        { role: 'user', content: goal },
+                        { role: 'assistant', content: data.message }
+                    ];
+                } else {
+                    showError(data.error || 'Failed to start conversation');
+                }
+                
+            } catch (error) {
+                console.error('Goal selection error:', error);
+                removeTypingIndicator();
+                showError('Connection failed. Please try again.');
             }
             
             userInput.disabled = false;
             sendBtn.disabled = false;
-        }
-
-        // Check if we should show suggestions
-        function shouldShowSuggestions() {
-            // Only show suggestions for the interest question
-            return lastBotMessage.includes('interested in learning');
-        }
-
-        // Show autocomplete suggestions
-        function showSuggestions(inputValue) {
-            if (!shouldShowSuggestions() || !inputValue.trim()) {
-                hideSuggestions();
-                return;
-            }
-
-            const filtered = interestSuggestions.filter(suggestion =>
-                suggestion.toLowerCase().includes(inputValue.toLowerCase())
-            );
-
-            if (filtered.length === 0) {
-                hideSuggestions();
-                return;
-            }
-
-            suggestionsContainer.innerHTML = '';
-            filtered.slice(0, 5).forEach(suggestion => {
-                const item = document.createElement('div');
-                item.className = 'suggestion-item';
-                
-                // Highlight matching text
-                const regex = new RegExp(`(${inputValue})`, 'gi');
-                const highlighted = suggestion.replace(regex, '<span class="suggestion-highlight">$1</span>');
-                item.innerHTML = highlighted;
-                
-                item.onclick = () => selectSuggestion(suggestion);
-                suggestionsContainer.appendChild(item);
-            });
-
-            suggestionsContainer.classList.add('active');
-            showingSuggestions = true;
-        }
-
-        function hideSuggestions() {
-            suggestionsContainer.classList.remove('active');
-            showingSuggestions = false;
-        }
-
-        function selectSuggestion(suggestion) {
-            userInput.value = suggestion;
-            hideSuggestions();
             userInput.focus();
         }
-
-        // Input event listener for autocomplete
-        userInput.addEventListener('input', (e) => {
-            showSuggestions(e.target.value);
-        });
-
-        // Hide suggestions when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!suggestionsContainer.contains(e.target) && e.target !== userInput) {
-                hideSuggestions();
-            }
-        });
 
         function addMessage(text, isBot = true) {
             const messageDiv = document.createElement('div');
@@ -826,49 +785,32 @@
             const lowerMsg = botMessage.toLowerCase();
             let options = null;
             
-            console.log('🔍 Checking for chips in message:', botMessage.substring(0, 100));
-            
-            // Remove any existing chips
             const existingChips = document.getElementById('option-chips-container');
             if (existingChips) {
-                console.log('🗑️ Removing existing chips');
                 existingChips.remove();
             }
             
-            // CHIP DETECTION - ONLY FOR QUALIFICATION AND STATUS
-            
-            // Question 4: Educational Qualification chips
+            // Educational Qualification chips
             if ((lowerMsg.includes('educational qualification') || 
                  lowerMsg.includes('highest qualification') ||
                  lowerMsg.includes('highest educational')) &&
                 !lowerMsg.includes('describes you') &&
                 !lowerMsg.includes('right now')) {
                 options = ['10th', '12th / Diploma', "Bachelor's", "Master's"];
-                console.log('✅ Detected EDUCATIONAL QUALIFICATION question - showing chips');
             }
-            // Question 5: Current Status chips
+            // Current Status chips
             else if ((lowerMsg.includes('describes you') && lowerMsg.includes('right now')) ||
                      (lowerMsg.includes('current status') && lowerMsg.includes('right now'))) {
                 options = ['Student', 'Fresher', 'Working Professional', 'Job Switching'];
-                console.log('✅ Detected CURRENT STATUS question - showing chips');
             }
-            // Question 6: NO CHIPS for interests - user types freely
-            // (removed interest chip detection completely)
             
             if (options) {
-                console.log('📋 Showing chips:', options);
-                // Use longer delay on mobile to ensure DOM is ready
-                const isMobile = window.innerWidth <= 768;
-                const delay = isMobile ? 200 : 50;
-                
                 setTimeout(() => {
                     showOptionChips(options);
                     userInput.disabled = true;
                     sendBtn.disabled = true;
-                }, delay);
+                }, 100);
             } else {
-                console.log('ℹ️ No chips - user can type freely');
-                // Make sure input is enabled for typing
                 userInput.disabled = false;
                 sendBtn.disabled = false;
             }
@@ -896,24 +838,18 @@
         }
 
         async function handleOptionClick(option) {
-            console.log('User clicked option:', option);
-            
-            // Remove chips
             const chipsContainer = document.getElementById('option-chips-container');
             if (chipsContainer) chipsContainer.remove();
             
-            // Show selection as user message
             const selectionDiv = document.createElement('div');
             selectionDiv.className = 'message user';
             selectionDiv.innerHTML = `<div class="message-content">${option}</div>`;
             chatMessages.appendChild(selectionDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
             
-            // Keep input disabled while processing
             userInput.disabled = true;
             sendBtn.disabled = true;
             
-            // Send message and get response
             showTypingIndicator();
             const response = await sendMessage(option);
             removeTypingIndicator();
@@ -922,7 +858,6 @@
                 addMessage(response, true);
             }
             
-            // Re-enable input if no new chips
             setTimeout(() => {
                 const hasChips = document.getElementById('option-chips-container');
                 if (!hasChips) {
@@ -934,12 +869,9 @@
         }
 
         function parseMessageWithFormatting(text) {
-            // Bold text
             text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            // Line breaks
             text = text.replace(/\n/g, '<br>');
             
-            // Highlight category badges in recommendations
             const categoryBadges = {
                 '🔧 Technical Builder': '#3B82F6',
                 '📱 Creative Communicator': '#8B5CF6',
@@ -959,15 +891,11 @@
                 text = text.replace(badge, badgeHtml);
             });
             
-            // Course recommendations with better styling
             if (text.toLowerCase().includes('recommend') || 
                 text.toLowerCase().includes('course') ||
-                text.toLowerCase().includes('perfect for you') ||
-                text.toLowerCase().includes('primary recommendation')) {
+                text.toLowerCase().includes('perfect for you')) {
                 
-                // Style PRIMARY RECOMMENDATION differently
                 text = text.replace(/PRIMARY RECOMMENDATION:/g, '<div style="margin: 12px 0; padding: 8px; background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%); color: white; border-radius: 8px; font-weight: 600;">🎯 PRIMARY RECOMMENDATION</div>');
-                
                 text = text.replace(/ALTERNATIVE OPTIONS:/g, '<div style="margin: 12px 0; padding: 8px; background: #F3F4F6; border-radius: 8px; font-weight: 600; color: #374151;">💡 ALTERNATIVE OPTIONS</div>');
                 
                 const coursePattern = /(?:^|\n)(?:\d+\.\s+)?\*\*([^*]+)\*\*\s*\n([^\n]+(?:\n(?!\*\*)[^\n]+)*)/gm;
@@ -1017,8 +945,6 @@
                     content: userMessage
                 });
 
-                console.log('📤 Sending to:', APPS_SCRIPT_URL);
-
                 const response = await fetch(APPS_SCRIPT_URL, {
                     method: 'POST',
                     headers: {
@@ -1030,15 +956,12 @@
                         conversationHistory: conversationHistory
                     })
                 });
-
-                console.log('📥 Response status:', response.status);
                 
                 if (!response.ok) {
                     throw new Error(`Server returned ${response.status}`);
                 }
                 
                 const data = await response.json();
-                console.log('✅ Response data:', data);
                 
                 if (data.success) {
                     conversationHistory.push({
@@ -1063,15 +986,6 @@
             const message = userInput.value.trim();
             if (!message) return;
 
-            // Hide suggestions when sending
-            hideSuggestions();
-
-            if (!hasStarted) {
-                const welcome = chatMessages.querySelector('.welcome-message');
-                if (welcome) welcome.remove();
-                hasStarted = true;
-            }
-
             addMessage(message, false);
             userInput.value = '';
             userInput.disabled = true;
@@ -1085,7 +999,6 @@
                 addMessage(response, true);
             }
 
-            // Only re-enable if no chips are showing
             setTimeout(() => {
                 const hasChips = document.getElementById('option-chips-container');
                 if (!hasChips) {
@@ -1105,40 +1018,8 @@
             }
         });
 
-        // Initialize
-        userInput.focus();
-
         console.log('🚀 Chat initialized with session ID:', sessionId);
-
-        // Handle mobile keyboard visibility - scroll to keep messages visible
-        let previousHeight = window.innerHeight;
-        
-        window.visualViewport?.addEventListener('resize', () => {
-            const currentHeight = window.visualViewport.height;
-            
-            // Keyboard opened (viewport got smaller)
-            if (currentHeight < previousHeight) {
-                setTimeout(() => {
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
-                }, 100);
-            }
-            
-            previousHeight = currentHeight;
-        });
-
-        // Fallback for browsers without visualViewport
-        window.addEventListener('resize', () => {
-            setTimeout(() => {
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }, 100);
-        });
-
-        // Extra: Ensure input stays visible on mobile
-        userInput.addEventListener('focus', () => {
-            setTimeout(() => {
-                userInput.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            }, 300);
-        });
+        console.log('⚠️ REMEMBER TO UPDATE APPS_SCRIPT_URL AFTER DEPLOYMENT!');
     </script>
 </body>
 </html>
